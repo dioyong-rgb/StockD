@@ -1,0 +1,189 @@
+/*
+ * StockD 시안 디자인 토큰 (D7)
+ * - 색·간격·반경·그림자·글꼴·크기 값은 이 파일에만 정의한다.
+ * - 다른 CSS 파일은 var(--토큰명)만 사용하고 색상 값을 직접 쓰지 않는다.
+ * - 기본색은 기존 시안(preview/index.html)의 민트 계열(#247D68 / #16816A)을 유지한다.
+ * - 글자/배경 쌍은 WCAG AA(본문 4.5:1) 이상을 기준으로 골랐다.
+ *
+ * 반응형 기준 (CSS 변수는 @media 조건에 쓸 수 없으므로 아래 값을 직접 사용)
+ * - 모바일(카드형):      ~599px   → 360px 기준 검증. .responsive-table 이 카드로 바뀜
+ * - 태블릿(축약 표):     600px ~ 1199px → 768px 기준 검증. .col-detail 열 숨김
+ * - 사이드바 전환:       959px 이하에서 사이드바 → 상단 가로 메뉴
+ * - 데스크톱(상세 표):   1200px 이상 → 1440px 기준 검증
+ * - 넓은 화면:           1600px 이상 → 본문 최대 폭 유지, 위 여백만 늘림
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ── 기본 색 ───────────────────────────── */
+  --color-brand: #16816a;          /* 주 강조색: 링크·주 버튼 (흰 배경 대비 4.8:1) */
+  --color-brand-strong: #247d68;   /* 브랜드 진한 톤: 활성 메뉴 글자·제목 강조 */
+  --color-brand-hover: #106652;    /* 주 버튼 hover */
+  --color-brand-soft: #eaf6f1;     /* 민트 옅은 배경: 활성 메뉴·샘플 띠 */
+  --color-brand-line: #cce6db;     /* 민트 옅은 테두리 */
+  --color-on-brand: #ffffff;       /* 브랜드 배경 위 글자 */
+
+  --color-text: #203c37;           /* 본문 글자 */
+  --color-text-muted: #566a64;     /* 보조 글자 (흰 배경 5.6:1, 캔버스 5.2:1) */
+  --color-text-subtle: #66786f;    /* 아주 작은 보조 글자 대신 쓰지 않음. 비활성 표기용 (4.6:1) */
+  --color-heading: #1a332e;
+
+  --color-canvas: #f3f6f5;         /* 페이지 배경 */
+  --color-surface: #ffffff;        /* 카드·사이드바·상단바 배경 */
+  --color-surface-muted: #f7faf9;  /* 표 머리·보조 영역 */
+  --color-surface-hover: #f1f6f3;  /* 메뉴·행 hover */
+  --color-line: #dce7e3;           /* 기본 구분선 */
+  --color-line-strong: #b9cbc4;    /* 입력 테두리 (비텍스트 3:1 이상 확보용으로 진하게) */
+  --color-input-border: #8fa59d;   /* 입력창 테두리 (배경 대비 3:1) */
+
+  --color-focus: #1f7f69;          /* 포커스 링 */
+  --color-focus-halo: rgba(22, 129, 106, .22);
+
+  --color-overlay: rgba(16, 32, 28, .46);  /* 다이얼로그 backdrop */
+
+  /* ── 쇼핑몰 채널 점 색 (장식용, 글자에는 쓰지 않음) ── */
+  --color-channel-naver: #14a765;
+  --color-channel-coupang: #e26038;
+
+  /* ── 안내 띠(notice) ───────────────────── */
+  --color-info-bg: #edf5f1;
+  --color-info-fg: #2c5446;
+  --color-info-line: #9fcab9;
+  --color-warn-bg: #fff4e0;
+  --color-warn-fg: #6b4610;
+  --color-warn-line: #d9a75a;
+  --color-danger-bg: #fdecec;
+  --color-danger-fg: #8c2222;
+  --color-danger-line: #d98080;
+
+  /* ── 재고 상태 8종 배지 ─────────────────────
+   * 색이 겹치지 않도록 모양(채움/테두리/점선)과 글리프를 함께 바꾼다.
+   * 글자색/배경 대비는 모두 4.5:1 이상.
+   */
+  --state-normal-fg: #1d6648;        /* 정상 예시: 옅은 초록 채움 + ✓ */
+  --state-normal-bg: #e6f4ec;
+  --state-normal-line: #b6dcc8;
+
+  --state-low-fg: #74470b;           /* 부족 예시: 호박색 채움 + ▼ */
+  --state-low-bg: #ffefcf;
+  --state-low-line: #e3b866;
+
+  --state-zero-fg: #ffffff;          /* 품절: 진한 빨강 꽉 찬 배지 + ■ (가장 강함) */
+  --state-zero-bg: #b02a2a;
+  --state-zero-line: #b02a2a;
+
+  --state-failed-fg: #9b2020;        /* 조회 실패: 흰 바탕 + 빨강 실선 테두리 + ! */
+  --state-failed-bg: #fff5f5;
+  --state-failed-line: #c64545;
+
+  --state-stale-fg: #6b4610;         /* 확인 지연: 옅은 호박 바탕 + 점선 테두리 + ↻ */
+  --state-stale-bg: #fffaf0;
+  --state-stale-line: #b98330;
+
+  --state-unsupported-fg: #4a5662;   /* 미지원 예시: 회색 채움 + ⊘ */
+  --state-unsupported-bg: #eceff3;
+  --state-unsupported-line: #c5ccd5;
+
+  --state-unmanaged-fg: #4a5662;     /* 관리 미사용: 흰 바탕 + 회색 점선 + – */
+  --state-unmanaged-bg: #ffffff;
+  --state-unmanaged-line: #8d98a5;
+
+  --state-unverified-fg: #454b9c;    /* 지원 미확인: 남보라 채움 + ? */
+  --state-unverified-bg: #efeffd;
+  --state-unverified-line: #c3c5ee;
+
+  /* 보조 배지: 샘플·중립·인증 미구현 */
+  --badge-sample-fg: #4f5f72;
+  --badge-sample-bg: #eef2f6;
+  --badge-auth-fg: #6b4610;
+  --badge-auth-bg: #fff4e0;
+  --badge-auth-line: #d9a75a;
+
+  /* 숫자 강조 */
+  --number-zero: #b02a2a;
+  --number-low: #8a560f;
+  --number-none: #66786f;
+
+  /* ── 게임 요소 (한 단계 낮은 보조 톤) ── */
+  --game-fg: #2f6a5a;
+  --game-bg: #f4faf7;
+  --game-line: #cfe4da;
+  --game-done-fg: #1c5e4d;
+  --game-done-bg: #e3f2eb;
+  --game-done-line: #9ccbb8;
+  --progress-track: #e2ebe7;
+  --progress-value: #3d9a83;
+
+  /* 토스트 */
+  --toast-bg: #244d40;
+  --toast-fg: #ffffff;
+
+  /* ── 간격 (4px 배수) ───────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+
+  /* ── 반경 ─────────────────────────────── */
+  --radius-xs: 3px;    /* 배지 */
+  --radius-sm: 4px;    /* 입력·버튼·안내 띠 */
+  --radius-md: 6px;    /* 메뉴 항목·스탬프·토스트 */
+  --radius-lg: 8px;    /* 카드·다이얼로그 */
+  --radius-pill: 999px;
+
+  /* ── 그림자 (카드는 기본적으로 테두리만, 떠 있는 요소에만 그림자) ── */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(20, 40, 34, .06);
+  --shadow-md: 0 4px 18px rgba(20, 40, 34, .14);
+  --shadow-lg: 0 12px 40px rgba(20, 40, 34, .22);
+
+  /* ── 글꼴 (시스템 한글 글꼴만, 외부 폰트 없음) ── */
+  --font-sans: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
+  --font-mono: Consolas, "D2Coding", "SFMono-Regular", Menlo, monospace;
+
+  --font-size-xs: 12px;     /* 최소 글자 크기. 이보다 작게 쓰지 않음 */
+  --font-size-sm: 13px;
+  --font-size-md: 14px;     /* 본문 */
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;     /* h2 */
+  --font-size-2xl: 22px;
+  --font-size-3xl: 28px;    /* h1 */
+  --font-size-number: 17px;
+  --font-size-number-lg: 30px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.3;
+  --line-height-base: 1.6;
+  --line-height-loose: 1.85;
+
+  /* ── 크기 ─────────────────────────────── */
+  --touch-min: 44px;          /* 모든 클릭 요소 최소 44x44 (데스크톱 포함) */
+  --control-height: 44px;     /* 입력·버튼 높이 */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --sidebar-width: 216px;
+  --sidebar-width-compact: 184px;
+  --topbar-height: 64px;
+  --content-max: 1600px;
+  --prose-max: 72ch;
+  --dialog-width: 680px;
+
+  /* ── 움직임 ──────────────────────────── */
+  --duration-fast: 140ms;
+  --duration-base: 200ms;
+  --ease-out: cubic-bezier(.2, .7, .3, 1);
+
+  /* ── 겹침 순서 ───────────────────────── */
+  --z-sticky: 10;
+  --z-menu: 30;
+  --z-toast: 50;
+}

@@ -1,0 +1,10 @@
+# 비밀값: API 키 파일은 어떤 경우에도 저장소에 올리지 않는다
+env/
+.env
+.env.*
+!.env.example
+
+# 의존성·빌드·로그
+node_modules/
+.next/
+*.log

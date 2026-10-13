@@ -1,0 +1,867 @@
+{
+  "at": "2026-10-12T10:19:43.459Z",
+  "total": 120,
+  "passed": 120,
+  "failed": 0,
+  "results": [
+    {
+      "id": "E-STATUS",
+      "viewport": "360",
+      "name": "상태 카드: 키 파일 로드됨 / vendorId 파일 없음(직접 입력) / 잠금 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-1",
+      "viewport": "360",
+      "name": "가로 스크롤 없음(초기 화면)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-CHECK",
+      "viewport": "360",
+      "name": "연결 확인 성공 문구 + 쿠팡 호출 1회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-1",
+      "viewport": "360",
+      "name": "상품 20건 표시 + 다음 페이지 버튼 보임",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-2",
+      "viewport": "360",
+      "name": "상품 목록 메타에 다음 페이지 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-3",
+      "viewport": "360",
+      "name": "다음 페이지: 5건, 마지막 페이지, 다음 버튼 숨김",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PROJECTION",
+      "viewport": "360",
+      "name": "화면에 projection 밖 필드(mdId 값) 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-OPTIONS",
+      "viewport": "360",
+      "name": "옵션 5개 중 승인 전 1개는 선택 불가",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-BTN",
+      "viewport": "360",
+      "name": "옵션 미선택일 땐 재고 조회 버튼 비활성, 선택하면 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-NORMAL",
+      "viewport": "360",
+      "name": "정상 숫자: 수량 5 + 정상 조회 배지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-ZERO",
+      "viewport": "360",
+      "name": "정상 0: 수량 0 + 품절 배지(조회 실패 아님)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-SERVER",
+      "viewport": "360",
+      "name": "조회 실패(5xx): 수량 — + 조회 실패 + 쿠팡 서버 오류 원인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-PARSE",
+      "viewport": "360",
+      "name": "조회 실패(수량 형식): 수량 — + 조회 실패 + 형식 오류 원인(5xx 원인과 구분)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-KIND",
+      "viewport": "360",
+      "name": "판매자배송 행은 수량 종류 \"채널 등록 재고\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG",
+      "viewport": "360",
+      "name": "로켓그로스 행: 주문가능 재고 7 + 정상 조회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG-SEPARATE",
+      "viewport": "360",
+      "name": "같은 옵션 ID 의 판매자배송·로켓그로스 값이 별도 행(덮어쓰지 않음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-NO-SUM",
+      "viewport": "360",
+      "name": "합계 행·합계 문구 없음(행 수=조회 건수 5)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOG",
+      "viewport": "360",
+      "name": "호출 로그: 이름·상태·시간만(경로·vendorId·ID·쿼리 없음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-2",
+      "viewport": "360",
+      "name": "가로 스크롤 없음(결과 표 표시 후)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-1",
+      "viewport": "360",
+      "name": "403 후 잠금 안내: 제목에 N초, 원인에 공인 IP 가능성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-2",
+      "viewport": "360",
+      "name": "상태 카드 잠금: \"N초 남음\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-3",
+      "viewport": "360",
+      "name": "잠금 중 쿠팡 호출 버튼(연결 확인·상품·RG) 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-4",
+      "viewport": "360",
+      "name": "비활성 버튼을 강제 클릭해도 쿠팡 호출 0회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-5",
+      "viewport": "360",
+      "name": "카운트다운 감소",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-6",
+      "viewport": "360",
+      "name": "오류 카드에 403 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-7",
+      "viewport": "360",
+      "name": "60초 경과 후 잠금 안내 자동 사라짐 + 버튼 다시 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-1",
+      "viewport": "360",
+      "name": "연속 실패 2회: 수동 잠금 안내 + 잠금 해제 버튼 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-2",
+      "viewport": "360",
+      "name": "해제 대기(UNLOCK_WAIT) 안내 배너 표시 + 잠금 해제 버튼 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-3",
+      "viewport": "360",
+      "name": "대기 안내에 남은 초(약 N초) 포함",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-4",
+      "viewport": "360",
+      "name": "대기 중 해제 버튼 강제 클릭: 확인창·호출 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-1",
+      "viewport": "360",
+      "name": "60초 경과 후 잠금 해제 버튼 활성, 대기 배너 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-2",
+      "viewport": "360",
+      "name": "해제 #1 성공: 확인창 표시(경고 문구 없음), 잠금 안내 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-3",
+      "viewport": "360",
+      "name": "해제 후 다시 연속 2회 실패 -> 수동 잠금",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-4",
+      "viewport": "360",
+      "name": "해제 #2 성공: 확인창에 이미 1회 해제 경고",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-1",
+      "viewport": "360",
+      "name": "UNLOCK_LIMIT: 오류 카드에 해제 횟수 소진 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-2",
+      "viewport": "360",
+      "name": "UNLOCK_LIMIT: \"서버를 다시 실행하세요\" 안내 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-3",
+      "viewport": "360",
+      "name": "UNLOCK_LIMIT 후에도 수동 잠금 유지(호출 버튼 비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-4",
+      "viewport": "360",
+      "name": "UNLOCK_LIMIT 후 \"잠금 해제\" 버튼이 꺼짐(비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-5",
+      "viewport": "360",
+      "name": "UNLOCK_LIMIT 후 잠금 안내 영역(lock-alert)에도 서버 재실행 안내",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-STATUS",
+      "viewport": "768",
+      "name": "상태 카드: 키 파일 로드됨 / vendorId 파일 없음(직접 입력) / 잠금 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-1",
+      "viewport": "768",
+      "name": "가로 스크롤 없음(초기 화면)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-CHECK",
+      "viewport": "768",
+      "name": "연결 확인 성공 문구 + 쿠팡 호출 1회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-1",
+      "viewport": "768",
+      "name": "상품 20건 표시 + 다음 페이지 버튼 보임",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-2",
+      "viewport": "768",
+      "name": "상품 목록 메타에 다음 페이지 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-3",
+      "viewport": "768",
+      "name": "다음 페이지: 5건, 마지막 페이지, 다음 버튼 숨김",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PROJECTION",
+      "viewport": "768",
+      "name": "화면에 projection 밖 필드(mdId 값) 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-OPTIONS",
+      "viewport": "768",
+      "name": "옵션 5개 중 승인 전 1개는 선택 불가",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-BTN",
+      "viewport": "768",
+      "name": "옵션 미선택일 땐 재고 조회 버튼 비활성, 선택하면 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-NORMAL",
+      "viewport": "768",
+      "name": "정상 숫자: 수량 5 + 정상 조회 배지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-ZERO",
+      "viewport": "768",
+      "name": "정상 0: 수량 0 + 품절 배지(조회 실패 아님)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-SERVER",
+      "viewport": "768",
+      "name": "조회 실패(5xx): 수량 — + 조회 실패 + 쿠팡 서버 오류 원인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-PARSE",
+      "viewport": "768",
+      "name": "조회 실패(수량 형식): 수량 — + 조회 실패 + 형식 오류 원인(5xx 원인과 구분)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-KIND",
+      "viewport": "768",
+      "name": "판매자배송 행은 수량 종류 \"채널 등록 재고\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG",
+      "viewport": "768",
+      "name": "로켓그로스 행: 주문가능 재고 7 + 정상 조회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG-SEPARATE",
+      "viewport": "768",
+      "name": "같은 옵션 ID 의 판매자배송·로켓그로스 값이 별도 행(덮어쓰지 않음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-NO-SUM",
+      "viewport": "768",
+      "name": "합계 행·합계 문구 없음(행 수=조회 건수 5)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOG",
+      "viewport": "768",
+      "name": "호출 로그: 이름·상태·시간만(경로·vendorId·ID·쿼리 없음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-2",
+      "viewport": "768",
+      "name": "가로 스크롤 없음(결과 표 표시 후)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-1",
+      "viewport": "768",
+      "name": "403 후 잠금 안내: 제목에 N초, 원인에 공인 IP 가능성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-2",
+      "viewport": "768",
+      "name": "상태 카드 잠금: \"N초 남음\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-3",
+      "viewport": "768",
+      "name": "잠금 중 쿠팡 호출 버튼(연결 확인·상품·RG) 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-4",
+      "viewport": "768",
+      "name": "비활성 버튼을 강제 클릭해도 쿠팡 호출 0회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-5",
+      "viewport": "768",
+      "name": "카운트다운 감소",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-6",
+      "viewport": "768",
+      "name": "오류 카드에 403 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-7",
+      "viewport": "768",
+      "name": "60초 경과 후 잠금 안내 자동 사라짐 + 버튼 다시 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-1",
+      "viewport": "768",
+      "name": "연속 실패 2회: 수동 잠금 안내 + 잠금 해제 버튼 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-2",
+      "viewport": "768",
+      "name": "해제 대기(UNLOCK_WAIT) 안내 배너 표시 + 잠금 해제 버튼 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-3",
+      "viewport": "768",
+      "name": "대기 안내에 남은 초(약 N초) 포함",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-4",
+      "viewport": "768",
+      "name": "대기 중 해제 버튼 강제 클릭: 확인창·호출 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-1",
+      "viewport": "768",
+      "name": "60초 경과 후 잠금 해제 버튼 활성, 대기 배너 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-2",
+      "viewport": "768",
+      "name": "해제 #1 성공: 확인창 표시(경고 문구 없음), 잠금 안내 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-3",
+      "viewport": "768",
+      "name": "해제 후 다시 연속 2회 실패 -> 수동 잠금",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-4",
+      "viewport": "768",
+      "name": "해제 #2 성공: 확인창에 이미 1회 해제 경고",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-1",
+      "viewport": "768",
+      "name": "UNLOCK_LIMIT: 오류 카드에 해제 횟수 소진 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-2",
+      "viewport": "768",
+      "name": "UNLOCK_LIMIT: \"서버를 다시 실행하세요\" 안내 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-3",
+      "viewport": "768",
+      "name": "UNLOCK_LIMIT 후에도 수동 잠금 유지(호출 버튼 비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-4",
+      "viewport": "768",
+      "name": "UNLOCK_LIMIT 후 \"잠금 해제\" 버튼이 꺼짐(비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-5",
+      "viewport": "768",
+      "name": "UNLOCK_LIMIT 후 잠금 안내 영역(lock-alert)에도 서버 재실행 안내",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-STATUS",
+      "viewport": "1440",
+      "name": "상태 카드: 키 파일 로드됨 / vendorId 파일 없음(직접 입력) / 잠금 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-1",
+      "viewport": "1440",
+      "name": "가로 스크롤 없음(초기 화면)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-CHECK",
+      "viewport": "1440",
+      "name": "연결 확인 성공 문구 + 쿠팡 호출 1회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-1",
+      "viewport": "1440",
+      "name": "상품 20건 표시 + 다음 페이지 버튼 보임",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-2",
+      "viewport": "1440",
+      "name": "상품 목록 메타에 다음 페이지 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PRODUCTS-3",
+      "viewport": "1440",
+      "name": "다음 페이지: 5건, 마지막 페이지, 다음 버튼 숨김",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-PROJECTION",
+      "viewport": "1440",
+      "name": "화면에 projection 밖 필드(mdId 값) 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-OPTIONS",
+      "viewport": "1440",
+      "name": "옵션 5개 중 승인 전 1개는 선택 불가",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-BTN",
+      "viewport": "1440",
+      "name": "옵션 미선택일 땐 재고 조회 버튼 비활성, 선택하면 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-NORMAL",
+      "viewport": "1440",
+      "name": "정상 숫자: 수량 5 + 정상 조회 배지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-ZERO",
+      "viewport": "1440",
+      "name": "정상 0: 수량 0 + 품절 배지(조회 실패 아님)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-SERVER",
+      "viewport": "1440",
+      "name": "조회 실패(5xx): 수량 — + 조회 실패 + 쿠팡 서버 오류 원인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-FAIL-PARSE",
+      "viewport": "1440",
+      "name": "조회 실패(수량 형식): 수량 — + 조회 실패 + 형식 오류 원인(5xx 원인과 구분)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-INV-KIND",
+      "viewport": "1440",
+      "name": "판매자배송 행은 수량 종류 \"채널 등록 재고\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG",
+      "viewport": "1440",
+      "name": "로켓그로스 행: 주문가능 재고 7 + 정상 조회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-RG-SEPARATE",
+      "viewport": "1440",
+      "name": "같은 옵션 ID 의 판매자배송·로켓그로스 값이 별도 행(덮어쓰지 않음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-NO-SUM",
+      "viewport": "1440",
+      "name": "합계 행·합계 문구 없음(행 수=조회 건수 5)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOG",
+      "viewport": "1440",
+      "name": "호출 로그: 이름·상태·시간만(경로·vendorId·ID·쿼리 없음)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LAYOUT-2",
+      "viewport": "1440",
+      "name": "가로 스크롤 없음(결과 표 표시 후)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-1",
+      "viewport": "1440",
+      "name": "403 후 잠금 안내: 제목에 N초, 원인에 공인 IP 가능성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-2",
+      "viewport": "1440",
+      "name": "상태 카드 잠금: \"N초 남음\"",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-3",
+      "viewport": "1440",
+      "name": "잠금 중 쿠팡 호출 버튼(연결 확인·상품·RG) 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-4",
+      "viewport": "1440",
+      "name": "비활성 버튼을 강제 클릭해도 쿠팡 호출 0회",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-5",
+      "viewport": "1440",
+      "name": "카운트다운 감소",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-6",
+      "viewport": "1440",
+      "name": "오류 카드에 403 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LOCK-7",
+      "viewport": "1440",
+      "name": "60초 경과 후 잠금 안내 자동 사라짐 + 버튼 다시 활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-1",
+      "viewport": "1440",
+      "name": "연속 실패 2회: 수동 잠금 안내 + 잠금 해제 버튼 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-2",
+      "viewport": "1440",
+      "name": "해제 대기(UNLOCK_WAIT) 안내 배너 표시 + 잠금 해제 버튼 비활성",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-3",
+      "viewport": "1440",
+      "name": "대기 안내에 남은 초(약 N초) 포함",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-MANUAL-4",
+      "viewport": "1440",
+      "name": "대기 중 해제 버튼 강제 클릭: 확인창·호출 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-1",
+      "viewport": "1440",
+      "name": "60초 경과 후 잠금 해제 버튼 활성, 대기 배너 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-2",
+      "viewport": "1440",
+      "name": "해제 #1 성공: 확인창 표시(경고 문구 없음), 잠금 안내 사라짐",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-3",
+      "viewport": "1440",
+      "name": "해제 후 다시 연속 2회 실패 -> 수동 잠금",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-UNLOCK-4",
+      "viewport": "1440",
+      "name": "해제 #2 성공: 확인창에 이미 1회 해제 경고",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-1",
+      "viewport": "1440",
+      "name": "UNLOCK_LIMIT: 오류 카드에 해제 횟수 소진 문구",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-2",
+      "viewport": "1440",
+      "name": "UNLOCK_LIMIT: \"서버를 다시 실행하세요\" 안내 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-3",
+      "viewport": "1440",
+      "name": "UNLOCK_LIMIT 후에도 수동 잠금 유지(호출 버튼 비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-4",
+      "viewport": "1440",
+      "name": "UNLOCK_LIMIT 후 \"잠금 해제\" 버튼이 꺼짐(비활성)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "E-LIMIT-5",
+      "viewport": "1440",
+      "name": "UNLOCK_LIMIT 후 잠금 안내 영역(lock-alert)에도 서버 재실행 안내",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "L-BROWSER-1",
+      "viewport": "-",
+      "name": "브라우저 수집물(응답·요청·console·DOM·저장소·쿠키·window·state·서버 로그)에 가짜 키·서명·세션 토큰(헤더 외) 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "L-BROWSER-2",
+      "viewport": "-",
+      "name": "세션 토큰은 GET / 응답의 meta 1곳에만 있고 DOM·window·저장소에는 남지 않음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "L-BROWSER-3",
+      "viewport": "-",
+      "name": "DOM 에서 session-token meta 제거됨",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "INFO",
+      "viewport": "-",
+      "name": "수집 규모",
+      "pass": true,
+      "detail": "",
+      "info": {
+        "scannedItems": 204,
+        "responses": 66,
+        "requests": 66,
+        "console": 21,
+        "snapshots": 6,
+        "serverLogLines": 45,
+        "consoleKinds": [
+          "error: Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+          "error: Failed to load resource: the server responded with a status of 423 (Locked)"
+        ]
+      }
+    }
+  ]
+}

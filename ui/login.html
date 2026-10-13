@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="login" data-layout="bare">
+  <main id="main" class="page">
+    <section class="card" style="max-width: 440px; margin: 0 auto" aria-labelledby="login-title">
+      <div class="card-header">
+        <div>
+          <h1 id="login-title">로그인</h1>
+          <p>StockD 작업 공간에 들어갑니다.</p>
+        </div>
+        <span class="badge badge-auth">인증 미구현 · 화면 시안</span>
+      </div>
+      <div class="card-body stack">
+        <div class="notice notice-warn" role="note">
+          <p><strong>이 화면은 시안입니다.</strong> 입력한 값은 저장하거나 전송하지 않으며 실제 로그인은 동작하지 않습니다. 실제 계정 정보를 입력하지 마세요.</p>
+        </div>
+
+        <form id="login-form" novalidate class="stack">
+          <div class="field">
+            <label for="login-email">이메일</label>
+            <input id="login-email" name="email" type="email" inputmode="email" autocomplete="off" aria-describedby="login-email-hint login-email-error">
+            <p class="field-hint" id="login-email-hint">예: name@example.com</p>
+            <p class="field-error" id="login-email-error" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="login-password">비밀번호</label>
+            <input id="login-password" name="password" type="password" autocomplete="off" aria-describedby="login-password-error">
+            <p class="field-error" id="login-password-error" hidden></p>
+            <label class="check-field"><input id="login-show" type="checkbox"> 비밀번호 표시</label>
+          </div>
+
+          <button type="submit" class="button button-primary button-block">로그인</button>
+        </form>
+
+        <div id="login-result" class="notice notice-info" role="status" tabindex="-1" hidden>
+          <p><strong>실제 로그인은 아직 연결되지 않았습니다.</strong> 입력값은 어디에도 전송되거나 저장되지 않았습니다.</p>
+        </div>
+
+        <p class="text-small text-muted">형식만 확인합니다. 계정 존재 여부나 비밀번호 일치는 확인하지 않습니다.</p>
+
+        <a class="button button-block" href="index.html">샘플로 둘러보기</a>
+      </div>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script>
+    // 로그인 시안: 입력값은 읽어서 형식만 확인하고 어디에도 저장·전송·출력하지 않는다
+    (function () {
+      var form = document.getElementById('login-form')
+      var email = document.getElementById('login-email')
+      var password = document.getElementById('login-password')
+      var show = document.getElementById('login-show')
+      var emailError = document.getElementById('login-email-error')
+      var passwordError = document.getElementById('login-password-error')
+      var result = document.getElementById('login-result')
+
+      function setError(input, el, message) {
+        if (message) {
+          el.textContent = message
+          el.hidden = false
+          input.setAttribute('aria-invalid', 'true')
+        } else {
+          el.textContent = ''
+          el.hidden = true
+          input.removeAttribute('aria-invalid')
+        }
+      }
+
+      function checkEmail() {
+        var value = email.value.trim()
+        if (!value) return '이메일을 입력해 주세요.'
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '이메일 형식이 올바르지 않습니다.'
+        return ''
+      }
+
+      function checkPassword() {
+        if (!password.value) return '비밀번호를 입력해 주세요.'
+        if (password.value.length < 8) return '비밀번호는 8자 이상 입력해 주세요.'
+        return ''
+      }
+
+      show.addEventListener('change', function () {
+        password.type = show.checked ? 'text' : 'password'
+      })
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault()
+        var emailMessage = checkEmail()
+        var passwordMessage = checkPassword()
+        setError(email, emailError, emailMessage)
+        setError(password, passwordError, passwordMessage)
+        if (emailMessage || passwordMessage) {
+          result.hidden = true
+          ;(emailMessage ? email : password).focus()
+          return
+        }
+        // 입력값 폐기 후 안내만 표시
+        form.reset()
+        password.type = 'password'
+        result.hidden = false
+        result.focus()
+      })
+    })()
+  </script>
+</body>
+</html>

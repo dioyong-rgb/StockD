@@ -1,0 +1,3 @@
+coupang
+Access Key: FAKE-ACCESS-0000-TEST-ONLY-1111
+Secret Key: FAKE_SECRET_zzzz_NOT_A_REAL_KEY_2222

@@ -1,0 +1,1751 @@
+/*
+ * StockD 시안 컴포넌트 스타일
+ * - tokens.css → base.css → components.css 순서로 불러온다.
+ * - 색·간격은 tokens.css 변수만 사용한다. 외부 이미지·폰트·URL 없음.
+ *
+ * ===================================================================
+ * 클래스 카탈로그 (개발자용 유일한 스타일 참고 문서)
+ * 형식: 클래스명 — 용도 — 마크업 예시
+ * ===================================================================
+ *
+ * [앱 셸·레이아웃 — base.css]
+ * .skip-link — 본문 바로가기 — <a class="skip-link" href="#main">본문 바로가기</a>
+ * .sample-banner — 최상단 샘플 띠 — <div class="sample-banner" role="note"><strong>샘플 데이터 · 실제 API 미연동</strong><span class="sample-banner-note">화면 구성 확인용 시안입니다.</span></div>
+ * .app-shell — 그리드 셸(사이드바·상단바·본문·푸터) — <div class="app-shell"><aside class="sidebar">…</aside><header class="topbar">…</header><main id="main" class="app-main page" tabindex="-1">…</main><footer class="app-footer">…</footer></div>
+ * .app-shell-bare — 사이드바 없는 셸(login). body[data-layout="bare"] 도 동일 — <div class="app-shell app-shell-bare">…</div>
+ * .sidebar / .brand / .brand-mark / .brand-sub — 사이드바와 로고 — <aside class="sidebar" aria-label="주 메뉴"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>StockD</strong></a><p class="brand-sub">재고와 주문을 한곳에서</p>…</aside>
+ * .side-nav / .side-nav-link — 업무 메뉴(현재 메뉴 aria-current) — <nav class="side-nav" aria-label="업무 화면"><ul><li><a class="side-nav-link" href="index.html" aria-current="page">대시보드</a></li></ul></nav>
+ * .side-nav-divider — 업무 메뉴와 부가 메뉴(매일 확인) 사이 구분선 — <li class="side-nav-divider" role="presentation"></li>
+ * .nav-count — 메뉴 옆 개수 — <span class="nav-count" aria-label="미연결 3개">3</span>
+ * .sidebar-bottom — 사이드바 하단 안내 — <div class="sidebar-bottom">…</div>
+ * .topbar / .topbar-start / .topbar-end / .topbar-date — 상단바 — <header class="topbar"><div class="topbar-start">첫 번째 작업 공간 <span class="badge badge-sample">샘플</span></div><div class="topbar-end"><span class="topbar-date">예시 기준 2026.10.04</span><span class="read-only">쇼핑몰 조회 전용</span><a class="topbar-link" href="help.html">도움말</a>…</div></header>
+ * .read-only — "쇼핑몰 조회 전용" 표시 — <span class="read-only">쇼핑몰 조회 전용</span>
+ * .app-main / .page — 본문 — <main id="main" class="app-main page" tabindex="-1">
+ * .page-heading — 페이지 제목부 — <div class="page-heading"><div><h1>통합 재고</h1><p>설명</p></div><p class="reference-time">샘플 시나리오 기준 <strong>2026.10.04 09:40</strong></p></div>
+ * .section / .section-gap — 본문 구획 간 세로 간격 — <section class="section">…</section>
+ * .grid .grid-2 / .grid-3 / .grid-4 — 카드 나열 그리드(반응형 자동 축소) — <div class="grid grid-4">…</div>
+ * .cluster — 가로 나열(버튼 묶음) — <div class="cluster"><a class="button">…</a></div>
+ * .stack — 자식 사이 세로 간격 — <div class="stack">…</div>
+ * .prose — 법률·소개 긴 글 — <article class="prose"><h2>제1조</h2><p>…</p></article>
+ * .app-footer — 푸터 — 아래 [푸터] 참고
+ *
+ * [글자·숫자 — base.css]
+ * .secondary — 표 안 보조 줄 — <span class="secondary">내추럴 / S</span>
+ * .sku — 내부 SKU·원본 ID. 표 셀(td) 바로 아래·.cell-value 안에서는 별도 줄(block)로 표시 — <span class="sku">BAG-NT-S · 샘플</span>
+ * .timestamp — 시각(줄바꿈 없음) — <span class="timestamp">09:40</span>
+ * .text-muted / .text-small — 흐린 글자 / 12px 글자 — <p class="text-muted">…</p>
+ * .number + .number-zero / .number-low / .number-none — 수량 강조(품절 빨강·부족 호박·없음 회색) — <span class="number number-none" aria-label="수량 없음">—</span>
+ * .link-block — 44px 독립 링크 — <a class="link-block" href="alerts.html">알림 전체 보기</a>
+ * .link-target — 목록·표·푸터 안 독립 링크의 최소 높이 44px 보장(inline-flex, 세로 가운데) — <a class="link-target" href="terms.html">이용약관</a>
+ * .cell-value — 표 셀 값 묶음(table.js 가 td 내용을 자동으로 감쌈). 카드 모드에서 값 칸 한 곳에 쌓이게 함 — <td data-label="채널·배송"><div class="cell-value"><span class="channel">…</span><span class="secondary">판매자배송</span></div></td>
+ * .sr-only — 화면에서 숨기고 스크린리더만 읽음 — <span class="sr-only">현재 메뉴</span>
+ *
+ * [표 — base.css + components.css]
+ * .table-scroll — 표 가로 스크롤 상자(필수 tabindex·aria-label). 최소 폭은 --table-min — <div class="table-scroll" tabindex="0" aria-label="재고 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min: 1040px"><table>…</table></div>
+ * .table — 스크롤 상자 밖에서 쓰는 일반 표 — <table class="table">…</table>
+ * .scroll-hint — 표 위 스크롤 안내(960px 미만만 보임) — <p class="scroll-hint">표를 좌우로 움직여 확인하세요.</p>
+ * .table-footnote — 표 하단 각주 — <p class="table-footnote">…</p>
+ * .result-summary — 결과 건수 줄(role=status) — <div class="result-summary" role="status"><strong>샘플 옵션 4개 / 전체 10개</strong><span class="secondary-hint">행을 선택하면 상세를 봅니다.</span></div>
+ * .col-detail — 1200px 미만에서 숨기는 상세 열(768 축약 표) — <th class="col-detail">원본 ID</th> … <td class="col-detail">DEMO-N-101</td>
+ * .align-right / .align-center — 정렬 — <td class="align-right">18</td>
+ * .row-clickable — 클릭 가능한 행 — <tr class="row-clickable">…</tr>
+ * .responsive-table — 600px 미만에서 행을 카드로 바꿈. td 마다 data-label 필수, 제목 칸은 .cell-title, 동작 칸은 .cell-actions — <table class="responsive-table"><tbody><tr><td class="cell-title" data-label="상품">코튼 파우치</td><td data-label="수량">18</td><td class="cell-actions" data-label=""><button class="button button-small">상세</button></td></tr></tbody></table>
+ * .key-value — 키-값 목록 — <dl class="key-value"><dt>내부 SKU</dt><dd>BAG-NT-S</dd></dl>
+ *
+ * [폼 — base.css + components.css]
+ * .field / .field-label / .field-hint / .field-error — 라벨+입력 — <div class="field"><label for="q">검색</label><input id="q" type="search" aria-describedby="q-hint"><p class="field-hint" id="q-hint">…</p></div>
+ * .search-input — 돋보기 아이콘 자리 있는 검색창 — <div class="search-input"><svg class="icon" aria-hidden="true">…</svg><input type="search"></div>
+ * .check-field — 44px 체크박스 라벨 — <label class="check-field"><input type="checkbox"> 효과 사용</label>
+ * .filter-bar / .filter-search / .filter-actions — 필터 바 — <form class="filter-bar" role="search"><div class="field filter-search">…</div><div class="field">…<select>…</select></div><div class="filter-actions"><button type="reset" class="button">필터 초기화</button></div></form>
+ * dialog / .dialog-header / .dialog-body / .dialog-footer / .dialog-wide — 상세 다이얼로그 — <dialog aria-labelledby="dlg-title"><div class="dialog-header"><div><h2 id="dlg-title">제목</h2><p>부제</p></div><button class="icon-button" aria-label="상세 닫기">✕</button></div><div class="dialog-body">…</div></dialog>
+ *
+ * [배지]
+ * .badge — 상태 배지(앞 글리프는 CSS 가 붙임, 텍스트 라벨 필수) — <span class="badge badge-normal">정상 예시</span>
+ *   .badge-normal ✓ 정상 예시 | .badge-low ▼ 부족 예시 | .badge-zero ■ 품절(꽉 찬 빨강) | .badge-failed ! 조회 실패(빨강 테두리)
+ *   .badge-stale ↻ 확인 지연(점선) | .badge-unsupported ⊘ 미지원 예시 | .badge-unmanaged – 관리 미사용(점선) | .badge-unverified ? 지원 미확인
+ *   데이터 state 값과 1:1: class="badge badge-${state}"
+ * .badge-sample — 샘플·중립 표기(글리프 없음) — <span class="badge badge-sample">샘플</span>
+ * .badge-neutral / .badge-attention / .badge-link — 재고 상태 8종과 다른 의미의 보조 배지(글리프 없음). SKU 미연결·실제 미연결·결제 완료/배송 중 같은 값에 쓴다. 상태 배지 재사용 금지 — <span class="badge badge-neutral">SKU 미연결</span> <span class="badge badge-attention">직접 확인 필요</span> <span class="badge badge-link">연결됨</span>
+ * .badge-auth — "인증 미구현" 표시 — <span class="badge badge-auth">인증 미구현</span>
+ * .badge-plain — 글리프 없는 배지가 필요할 때 상태 modifier 와 함께 — <span class="badge badge-low badge-plain">재고 부족 예시</span>
+ * .channel / .channel-naver / .channel-coupang — 쇼핑몰 표시(색 점 + 이름) — <span class="channel channel-naver">스마트스토어</span>
+ * .achievement / .achievement-earned — 게임 성취 배지(보조 톤) — <span class="achievement achievement-earned">첫 연결 체험 · 획득</span>
+ *
+ * [버튼]
+ * .button — 기본(흰 배경, 최소 44px) — <button type="button" class="button">초기화</button>
+ * .button-primary — 주 동작(민트) — <button class="button button-primary">시안에 연결 적용</button>
+ * .button-quiet — 테두리 없는 글자형 버튼·링크(44px 유지) — <a class="button button-quiet" href="alerts.html">관련 사례 보기</a>
+ * .button-small — 작은 글자·좁은 여백, 터치 영역은 44px 유지 — <button class="button button-small">상세</button>
+ * .button-danger — 기록 삭제 등 되돌릴 수 없는 내부 동작 — <button class="button button-danger">일일 기록 삭제</button>
+ * .button-block — 가로 100% — <button class="button button-primary button-block">로그인</button>
+ * .icon-button — 아이콘만 있는 44x44 버튼(aria-label 필수) — <button class="icon-button" aria-label="닫기">✕</button>
+ *
+ * [카드]
+ * .card / .card-header / .card-body / .card-footer — 기본 패널 — <section class="card"><div class="card-header"><div><h2>제목</h2><p>설명</p></div><a class="button button-quiet">전체 보기</a></div><div class="card-body">…</div></section>
+ * .card-flush — 본문 여백 없는 카드(표를 바로 넣을 때) — <section class="card card-flush">…<div class="table-scroll">…</div></section>
+ * .card-list / .card-list-item — 카드 안 행 목록(연결 상태·최근 알림) — <ul class="card-list"><li class="card-list-item">…</li></ul>
+ * .stat-card + .stat-card-danger / .stat-card-warn / .stat-card-neutral — 대시보드 확인 필요 요약(링크) — <a class="stat-card stat-card-danger" href="inventory.html?status=attention"><span class="stat-card-label">품절·부족</span><strong class="stat-card-value">3<small>건</small></strong><span class="stat-card-hint">샘플 기준 · 재고 보기</span></a>
+ *
+ * [안내]
+ * .notice + .notice-info / .notice-warn / .notice-danger — 안내 띠(앞 글리프 자동) — <div class="notice notice-warn" role="note"><p><strong>로켓그로스는 출고 이후 주문만 표시합니다.</strong> …</p></div>
+ * .state-card + .state-card-loading / -empty / -error / -stale / -partial / -unauthorized — UI 상태 6종 — <section class="state-card state-card-error" role="alert"><p class="state-card-label">조회 실패</p><h3>재고를 불러오지 못했습니다</h3><p>…</p><div class="state-card-actions"><button class="button">다시 시도</button></div></section>
+ * .skeleton / .skeleton-line — 로딩 자리표시 막대(state-card-loading 안) — <div class="skeleton" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>
+ * .empty-state — 필터 결과 없음 — <div class="empty-state" role="status"><h3>조건에 맞는 샘플이 없습니다</h3><p>이 결과는 API 조회 실패가 아닙니다.</p><button class="button button-small">필터 초기화</button></div>
+ * .toast / .toast-confirm — 하단 알림(4초 후 hidden). body[data-effects="on"] 일 때만 등장 효과 — <div class="toast toast-confirm" role="status" aria-live="polite" hidden>…</div>
+ *
+ * [탭·진행·게임 요소]
+ * .tabs / .tab — 탭 또는 필터 토글(aria-selected 또는 aria-pressed) — <div class="tabs" role="tablist" aria-label="알림 필터"><button class="tab" role="tab" aria-selected="true">미확인 <span class="tab-count">5</span></button></div>
+ * .progress / .progress-label — 진행 막대 — <div class="progress-label"><strong>오늘 진행 1/3</strong><span>이 브라우저에 기록</span></div><progress class="progress" max="3" value="1" aria-label="오늘의 확인 미션 1 / 3"></progress>
+ * .daily-summary — 대시보드 매일 확인 한 줄(경고 영역 아래) — <p class="daily-summary"><span>매일 확인 <strong>1/3</strong></span><a class="button button-quiet button-small" href="missions.html">이야기 이어 보기</a></p>
+ * .stamps / .stamp / .stamp-done / .stamp-today — 최근 7일 스탬프 — <ol class="stamps"><li class="stamp stamp-done stamp-today" aria-label="10/04 완료"><time>10/04</time><span class="stamp-mark" aria-hidden="true">완료</span></li></ol>
+ * .story-cut — 이야기 컷 선택 버튼(잠김은 disabled) — <button class="story-cut" aria-current="step">1컷<span>열림</span></button>
+ *
+ * [기타]
+ * .faq / .faq-item / .faq-body — FAQ 접이식 — <div class="faq"><details class="faq-item"><summary>질문</summary><div class="faq-body"><p>답변</p></div></details></div>
+ * .disclosure — FAQ 외 일반 접이식(샘플 연습) — <details class="disclosure"><summary>추가 샘플 연습 <span>기존 사례</span></summary><div class="disclosure-body">…</div></details>
+ * .user-menu / .user-menu-panel — 상단바 사용자 메뉴(details 기반, JS 불필요) — <details class="user-menu"><summary>DEMO-user <span class="badge badge-auth">인증 미구현</span></summary><div class="user-menu-panel"><a href="login.html">로그인 화면</a><button type="button" disabled>로그아웃 (준비 중)</button></div></details>
+ * .topbar-link — 상단바 텍스트 링크(도움말) 44px — <a class="topbar-link" href="help.html">도움말</a>
+ * .footer-inner / .footer-copy / .footer-desc / .footer-links — 푸터 — <footer class="app-footer"><div class="footer-inner"><p class="footer-desc">네이버·쿠팡 재고·주문을 조회하는 읽기 전용 도구</p><nav class="footer-links" aria-label="공통 페이지"><a href="about.html">회사 소개</a>…</nav><p class="footer-copy">© 2026 [회사명 입력 필요]. All rights reserved. <span class="badge badge-sample">샘플 시안</span></p></div></footer>
+ * .steps — 번호 절차 목록(연결 절차) — <ol class="steps"><li><strong>계정과 권한 준비</strong><span>…</span></li></ol>
+ * .placeholder — 자리표시자 값 강조([입력 필요]) — <span class="placeholder">[입력 필요]</span>
+ * ===================================================================
+ */
+
+/* ── 배지 ────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 1px 7px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.7;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* 상태 글리프: 색만으로 구분하지 않도록 텍스트 앞에 기호를 붙인다 (스크린리더 대체 텍스트 빈 값) */
+.badge::before {
+  font-size: 11px;
+  line-height: 1;
+  font-variant-emoji: text;
+}
+
+.badge-plain::before,
+.badge-sample::before,
+.badge-neutral::before,
+.badge-attention::before,
+.badge-link::before {
+  content: none !important;
+}
+
+.badge-normal {
+  border-color: var(--state-normal-line);
+  background: var(--state-normal-bg);
+  color: var(--state-normal-fg);
+}
+
+.badge-normal::before {
+  content: "✓";
+  content: "✓" / "";
+}
+
+.badge-low {
+  border-color: var(--state-low-line);
+  background: var(--state-low-bg);
+  color: var(--state-low-fg);
+}
+
+.badge-low::before {
+  content: "▼";
+  content: "▼" / "";
+  font-size: 9px;
+}
+
+/* 품절: 가장 눈에 띄는 꽉 찬 배지 */
+.badge-zero {
+  border-color: var(--state-zero-line);
+  background: var(--state-zero-bg);
+  color: var(--state-zero-fg);
+}
+
+.badge-zero::before {
+  content: "■";
+  content: "■" / "";
+  font-size: 9px;
+}
+
+/* 조회 실패: 흰 바탕 + 굵은 빨강 테두리 */
+.badge-failed {
+  border-color: var(--state-failed-line);
+  background: var(--state-failed-bg);
+  color: var(--state-failed-fg);
+  box-shadow: inset 0 0 0 1px var(--state-failed-line);
+}
+
+.badge-failed::before {
+  content: "!";
+  content: "!" / "";
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--state-failed-line);
+  color: var(--color-surface);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* 확인 지연: 점선 테두리로 "임시값"임을 표시 */
+.badge-stale {
+  border: 1px dashed var(--state-stale-line);
+  background: var(--state-stale-bg);
+  color: var(--state-stale-fg);
+}
+
+.badge-stale::before {
+  content: "↻";
+  content: "↻" / "";
+  font-size: 12px;
+}
+
+.badge-unsupported {
+  border-color: var(--state-unsupported-line);
+  background: var(--state-unsupported-bg);
+  color: var(--state-unsupported-fg);
+}
+
+.badge-unsupported::before {
+  content: "⊘";
+  content: "⊘" / "";
+  font-size: 12px;
+}
+
+/* 관리 미사용: 흰 바탕 + 점선 */
+.badge-unmanaged {
+  border: 1px dashed var(--state-unmanaged-line);
+  background: var(--state-unmanaged-bg);
+  color: var(--state-unmanaged-fg);
+}
+
+.badge-unmanaged::before {
+  content: "–";
+  content: "–" / "";
+  font-weight: var(--font-weight-bold);
+}
+
+.badge-unverified {
+  border-color: var(--state-unverified-line);
+  background: var(--state-unverified-bg);
+  color: var(--state-unverified-fg);
+}
+
+.badge-unverified::before {
+  content: "?";
+  content: "?" / "";
+  font-weight: var(--font-weight-bold);
+}
+
+/* 샘플·중립 */
+.badge-sample {
+  background: var(--badge-sample-bg);
+  color: var(--badge-sample-fg);
+  font-weight: var(--font-weight-medium);
+}
+
+/*
+ * 재고 상태 8종과 무관한 보조 배지 (글리프 없음, 텍스트 라벨 필수)
+ * - 재고 상태가 아닌 의미(SKU 미연결, 실제 미연결, 주문 진행 단계 등)에는 상태 배지 대신 이것을 쓴다.
+ */
+.badge-neutral {
+  border-color: var(--color-line-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 직접 확인이 필요한 항목 (재고 부족과 다른 의미) */
+.badge-attention {
+  border-color: var(--color-warn-line);
+  background: var(--color-warn-bg);
+  color: var(--color-warn-fg);
+}
+
+/* 연결됨 등 긍정적 연결 상태 (재고 정상과 다른 의미) */
+.badge-link {
+  border-color: var(--color-brand-line);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
+}
+
+/* 인증 미구현 */
+.badge-auth {
+  border: 1px dashed var(--badge-auth-line);
+  background: var(--badge-auth-bg);
+  color: var(--badge-auth-fg);
+}
+
+.badge-auth::before {
+  content: "※";
+  content: "※" / "";
+}
+
+/* 쇼핑몰 표시: 색 점(장식) + 이름 텍스트 */
+.channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.channel::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.channel-naver::before {
+  background: var(--color-channel-naver);
+}
+
+/* 쿠팡은 모양(마름모)도 달리해 색약 사용자도 구분 */
+.channel-coupang::before {
+  border-radius: 1px;
+  background: var(--color-channel-coupang);
+  transform: rotate(45deg);
+}
+
+/* 게임 성취 배지: 업무 배지보다 한 단계 낮은 톤 */
+.achievement {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--game-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.achievement::before {
+  content: "○";
+  content: "○" / "";
+}
+
+.achievement-earned {
+  border-color: var(--game-done-line);
+  background: var(--game-done-bg);
+  color: var(--game-done-fg);
+}
+
+.achievement-earned::before {
+  content: "✓";
+  content: "✓" / "";
+}
+
+/* ── 버튼 ────────────────────────────── */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.button:hover {
+  border-color: var(--color-brand);
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.button .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.button-primary {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.button-primary:hover {
+  border-color: var(--color-brand-hover);
+  background: var(--color-brand-hover);
+  color: var(--color-on-brand);
+}
+
+/* 글자형 버튼: 테두리 없지만 44px 터치 영역 유지 */
+.button-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-brand);
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+}
+
+.button-quiet:hover {
+  border-color: transparent;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-hover);
+  text-decoration: underline;
+}
+
+/* 작은 버튼: 글자와 좌우 여백만 줄이고 높이는 44px 유지 */
+.button-small {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.button-danger {
+  border-color: var(--color-danger-line);
+  color: var(--color-danger-fg);
+}
+
+.button-danger:hover {
+  border-color: var(--color-danger-fg);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+}
+
+.button-block {
+  width: 100%;
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  border-color: var(--color-line);
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+}
+
+.button-primary:disabled {
+  border-color: var(--color-line);
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  background: var(--color-surface-hover);
+}
+
+.icon-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* 아이콘 공통 (SVG 스프라이트 사용 시) */
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── 카드 ────────────────────────────── */
+.card {
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.card-header p {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.card-body {
+  padding: var(--space-5);
+}
+
+.card-footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.card-flush .card-body {
+  padding: 0;
+}
+
+.card-list {
+  list-style: none;
+}
+
+.card-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.card-list-item + .card-list-item {
+  border-top: 1px solid var(--color-line);
+}
+
+/* 대시보드 확인 필요 요약: 업무 경고가 가장 먼저 눈에 띄도록 왼쪽 굵은 띠 + 큰 숫자 */
+.stat-card {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+  min-height: 120px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-line);
+  border-left-width: 5px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+a.stat-card:hover {
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+}
+
+/* 링크 카드는 끝에 화살표로 이동 가능함을 표시 */
+a.stat-card::after {
+  content: "→";
+  content: "→" / "";
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.stat-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: var(--space-6);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-card-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.stat-card-value small {
+  margin-left: 2px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.stat-card-hint {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.stat-card-danger {
+  border-left-color: var(--state-zero-bg);
+  background: var(--color-danger-bg);
+}
+
+.stat-card-danger .stat-card-label,
+.stat-card-danger .stat-card-value {
+  color: var(--color-danger-fg);
+}
+
+.stat-card-danger .stat-card-label::before {
+  content: "■";
+  content: "■" / "";
+  font-size: 10px;
+}
+
+.stat-card-warn {
+  border-left-color: var(--color-warn-line);
+  background: var(--color-warn-bg);
+}
+
+.stat-card-warn .stat-card-label,
+.stat-card-warn .stat-card-value {
+  color: var(--color-warn-fg);
+}
+
+.stat-card-warn .stat-card-label::before {
+  content: "!";
+  content: "!" / "";
+}
+
+.stat-card-neutral {
+  border-left-color: var(--state-unverified-line);
+}
+
+.stat-card-neutral .stat-card-label::before {
+  content: "?";
+  content: "?" / "";
+  color: var(--state-unverified-fg);
+}
+
+/* ── 안내 띠 ─────────────────────────── */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-info-line);
+  border-left-width: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--color-info-bg);
+  color: var(--color-info-fg);
+  font-size: var(--font-size-sm);
+}
+
+.notice::before {
+  content: "i";
+  content: "i" / "";
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--color-surface);
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* 원 배경과 글자색을 분리하기 위해 아이콘 글자색은 배경색으로 덮는다 */
+.notice-info::before,
+.notice:not(.notice-warn):not(.notice-danger)::before {
+  background: var(--color-info-fg);
+  color: var(--color-info-bg);
+}
+
+.notice > :first-child:not(svg) {
+  min-width: 0;
+}
+
+.notice p + p {
+  margin-top: var(--space-1);
+}
+
+.notice strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.notice-warn {
+  border-color: var(--color-warn-line);
+  background: var(--color-warn-bg);
+  color: var(--color-warn-fg);
+}
+
+.notice-warn::before {
+  content: "!";
+  content: "!" / "";
+  border-radius: 2px;
+  background: var(--color-warn-fg);
+  color: var(--color-warn-bg);
+  font-family: var(--font-sans);
+  font-style: normal;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  padding-top: 5px;
+  font-size: 11px;
+}
+
+.notice-danger {
+  border-color: var(--color-danger-line);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+}
+
+.notice-danger::before {
+  content: "!";
+  content: "!" / "";
+  background: var(--color-danger-fg);
+  color: var(--color-danger-bg);
+  font-family: var(--font-sans);
+  font-style: normal;
+}
+
+/* ── 필터 바 ─────────────────────────── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.filter-bar .field {
+  flex: 0 1 168px;
+}
+
+.filter-bar .filter-search {
+  flex: 1 1 240px;
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ── 탭 ──────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-4);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
+.tab[aria-selected="true"],
+.tab[aria-pressed="true"],
+.tab[aria-current="page"] {
+  border-bottom-color: var(--color-brand);
+  color: var(--color-brand-strong);
+  font-weight: var(--font-weight-bold);
+}
+
+.tab-count {
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--badge-sample-bg);
+  color: var(--badge-sample-fg);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+/* ── 진행 막대 (게임 보조 톤) ────────── */
+.progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--progress-track);
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.progress::-webkit-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--progress-track);
+}
+
+.progress::-webkit-progress-value {
+  border-radius: var(--radius-pill);
+  background: var(--progress-value);
+}
+
+.progress::-moz-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--progress-value);
+}
+
+.progress-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.progress-label strong {
+  font-size: var(--font-size-md);
+}
+
+.progress-label span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* 대시보드 매일 확인 한 줄 요약: 경고 영역보다 아래, 차분한 톤 */
+.daily-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--game-line);
+  border-radius: var(--radius-md);
+  background: var(--game-bg);
+  color: var(--game-fg);
+  font-size: var(--font-size-sm);
+}
+
+/* ── 스탬프 (최근 7일) ───────────────── */
+.stamps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 64px;
+  padding: var(--space-2) 2px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.stamp time {
+  font-variant-numeric: tabular-nums;
+}
+
+.stamp-mark::before {
+  content: "—";
+  content: "—" / "";
+  display: block;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.stamp-done {
+  border-color: var(--game-done-line);
+  background: var(--game-done-bg);
+  color: var(--game-done-fg);
+  font-weight: var(--font-weight-medium);
+}
+
+.stamp-done .stamp-mark::before {
+  content: "✓";
+  content: "✓" / "";
+}
+
+/* 일부 진행(1/3, 2/3): 반원 표시 */
+.stamp-partial .stamp-mark::before {
+  content: "◐";
+  content: "◐" / "";
+}
+
+.stamp-today {
+  outline: 1px solid var(--game-fg);
+  outline-offset: 2px;
+}
+
+/* 이야기 컷 선택 버튼 */
+.story-cut {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: var(--space-1);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.story-cut span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.story-cut[aria-current="step"] {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+  font-weight: var(--font-weight-bold);
+}
+
+.story-cut:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+}
+
+/* ── 토스트 ──────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: calc(50% + var(--sidebar-width) / 2);
+  z-index: var(--z-toast);
+  max-width: calc(100% - 32px);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-md);
+  transform: translateX(-50%);
+}
+
+.app-shell-bare ~ .toast,
+[data-layout="bare"] .toast {
+  left: 50%;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: .5;
+    margin-bottom: -4px;
+  }
+
+  to {
+    opacity: 1;
+    margin-bottom: 0;
+  }
+}
+
+/* 효과 사용(body[data-effects="on"])일 때만 짧은 등장 효과 */
+body[data-effects="on"] .toast-confirm:not([hidden]) {
+  animation: toast-in var(--duration-fast) var(--ease-out);
+}
+
+/* ── UI 상태 카드 6종 ─────────────────── */
+.state-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--color-line);
+  border-top-width: 4px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.state-card h2,
+.state-card h3 {
+  font-size: var(--font-size-lg);
+}
+
+.state-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.state-card .state-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.state-card-label::before {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.state-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* loading: 중립 + 자리표시 막대 */
+.state-card-loading {
+  border-top-color: var(--color-line-strong);
+}
+
+.state-card-loading .state-card-label::before {
+  content: "…";
+  content: "…" / "";
+  background: var(--badge-sample-bg);
+  color: var(--badge-sample-fg);
+}
+
+/* empty: 브랜드 옅은 톤 (오류 아님) */
+.state-card-empty {
+  border-top-color: var(--color-brand-line);
+}
+
+.state-card-empty .state-card-label::before {
+  content: "○";
+  content: "○" / "";
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
+}
+
+/* error: 가장 강한 경고 */
+.state-card-error {
+  border-color: var(--color-danger-line);
+  border-top-color: var(--state-zero-bg);
+  background: var(--color-danger-bg);
+}
+
+.state-card-error .state-card-label {
+  color: var(--color-danger-fg);
+}
+
+.state-card-error .state-card-label::before {
+  content: "!";
+  content: "!" / "";
+  background: var(--color-danger-fg);
+  color: var(--color-danger-bg);
+}
+
+/* stale: 이전 값 유지, 점선 */
+.state-card-stale {
+  border-style: dashed;
+  border-top-style: solid;
+  border-color: var(--state-stale-line);
+  background: var(--state-stale-bg);
+}
+
+.state-card-stale .state-card-label {
+  color: var(--state-stale-fg);
+}
+
+.state-card-stale .state-card-label::before {
+  content: "↻";
+  content: "↻" / "";
+  background: var(--color-warn-bg);
+  color: var(--state-stale-fg);
+}
+
+/* partial: 일부만 성공 */
+.state-card-partial {
+  border-top-color: var(--color-warn-line);
+  background: var(--color-warn-bg);
+}
+
+.state-card-partial .state-card-label {
+  color: var(--color-warn-fg);
+}
+
+.state-card-partial .state-card-label::before {
+  content: "◐";
+  content: "◐" / "";
+  background: var(--color-surface);
+  color: var(--color-warn-fg);
+}
+
+/* unauthorized: 권한 없음 */
+.state-card-unauthorized {
+  border-top-color: var(--state-unverified-fg);
+  background: var(--state-unverified-bg);
+}
+
+.state-card-unauthorized .state-card-label {
+  color: var(--state-unverified-fg);
+}
+
+.state-card-unauthorized .state-card-label::before {
+  content: "⊘";
+  content: "⊘" / "";
+  background: var(--color-surface);
+  color: var(--state-unverified-fg);
+}
+
+/* 로딩 자리표시 막대 */
+.skeleton {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.skeleton-line {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--progress-track) 25%, var(--color-surface-muted) 50%, var(--progress-track) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
+
+.skeleton-line:nth-child(2) {
+  width: 82%;
+}
+
+.skeleton-line:nth-child(3) {
+  width: 64%;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* ── 빈 상태 ─────────────────────────── */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-9) var(--space-5);
+  text-align: center;
+}
+
+.empty-state::before {
+  content: "○";
+  content: "○" / "";
+  color: var(--color-line-strong);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.empty-state h2,
+.empty-state h3 {
+  font-size: var(--font-size-lg);
+}
+
+.empty-state p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.empty-state .button {
+  margin-top: var(--space-2);
+}
+
+/* ── 접이식 (FAQ·샘플 연습) ──────────── */
+.faq {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.faq-item + .faq-item {
+  border-top: 1px solid var(--color-line);
+}
+
+.faq-item > summary,
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-5);
+  font-weight: var(--font-weight-bold);
+  list-style: none;
+  cursor: pointer;
+}
+
+.faq-item > summary::-webkit-details-marker,
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 펼침 표시: 텍스트 기호 */
+.faq-item > summary::after,
+.disclosure > summary::after {
+  content: "+";
+  content: "+" / "";
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: 20px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+}
+
+.faq-item[open] > summary::after,
+.disclosure[open] > summary::after {
+  content: "−";
+  content: "−" / "";
+}
+
+.faq-item > summary:hover,
+.disclosure > summary:hover {
+  background: var(--color-surface-hover);
+}
+
+.faq-item > summary:focus-visible,
+.disclosure > summary:focus-visible {
+  outline-offset: -3px;
+}
+
+.faq-body,
+.disclosure-body {
+  padding: 0 var(--space-5) var(--space-5);
+  color: var(--color-text);
+  line-height: var(--line-height-loose);
+}
+
+.disclosure {
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface-muted);
+}
+
+.disclosure > summary span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+}
+
+.disclosure-body {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+/* ── 상단바 링크·사용자 메뉴 ─────────── */
+.topbar-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  list-style: none;
+  cursor: pointer;
+}
+
+.user-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.user-menu > summary::after {
+  content: "▾";
+  content: "▾" / "";
+  color: var(--color-text-muted);
+}
+
+.user-menu > summary:hover {
+  background: var(--color-surface-hover);
+}
+
+.user-menu-panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: var(--z-menu);
+  display: grid;
+  min-width: 220px;
+  padding: var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.user-menu-panel p {
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.user-menu-panel a,
+.user-menu-panel button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  text-decoration: none;
+}
+
+.user-menu-panel a:hover,
+.user-menu-panel button:not(:disabled):hover {
+  background: var(--color-surface-hover);
+}
+
+.user-menu-panel button:disabled {
+  color: var(--color-text-subtle);
+}
+
+/* ── 푸터 ────────────────────────────── */
+.footer-inner {
+  display: grid;
+  gap: var(--space-2);
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.footer-desc {
+  color: var(--color-text);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  margin-left: calc(var(--space-2) * -1);
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.footer-links a:hover {
+  color: var(--color-brand-hover);
+}
+
+.footer-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+/* ── 기타 ────────────────────────────── */
+/* 번호 절차 목록 */
+.steps {
+  display: grid;
+  gap: var(--space-3);
+  counter-reset: step;
+  list-style: none;
+}
+
+.steps li {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding-left: 36px;
+  counter-increment: step;
+  font-size: var(--font-size-sm);
+}
+
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.steps li span {
+  color: var(--color-text-muted);
+}
+
+/* 자리표시자 값: 실제 정보처럼 보이지 않게 점선 상자 */
+.placeholder {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: .95em;
+}
+
+/* 목록·표·푸터 안 독립 링크: 글자가 작아도(두 글자 링크 등) 클릭 영역 44x44px 보장 */
+.link-target {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+}
+
+/* 표 셀 안 SKU·원본 ID 는 상품명·옵션과 붙어 보이지 않도록 별도 줄로 (문장·라벨 안 인라인 사용은 영향 없음) */
+td > .sku,
+.cell-value > .sku {
+  display: block;
+  margin-top: 2px;
+}
+
+/* 페이지 제목 옆 기준 시각 */
+.reference-time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-align: right;
+}
+
+.reference-time strong {
+  display: block;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 데이터 카드 모드 (.responsive-table) ──
+ * 600px 이상: 일반 표 (.table-scroll 의 가로 스크롤 사용)
+ * 600px 미만: 행마다 카드, 각 칸은 "라벨 | 값" 2열. td[data-label] 필수
+ */
+@media (max-width: 599px) {
+  .table-scroll > table.responsive-table {
+    min-width: 0;
+  }
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  /* 머리행은 스크린리더용으로만 남김 */
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .responsive-table caption {
+    display: block;
+  }
+
+  .responsive-table tr {
+    margin: 0 0 var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .table-scroll .responsive-table tbody {
+    padding: var(--space-3);
+  }
+
+  .responsive-table tbody tr:hover {
+    background: var(--color-surface);
+  }
+
+  .table-scroll .responsive-table td,
+  .responsive-table td {
+    display: grid;
+    grid-template-columns: minmax(88px, 36%) minmax(0, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 1px dashed var(--color-line);
+    text-align: left;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+  }
+
+  /*
+   * 값 영역: 라벨(::before)은 1열, 나머지 자식은 모두 2열에 위에서 아래로 쌓는다.
+   * table.js 는 td 내용을 .cell-value 한 덩어리로 감싸 주고, 직접 작성한 표(td 직속 여러 요소)도 이 규칙으로 정렬된다.
+   */
+  .responsive-table td[data-label]:not([data-label=""]):not(.cell-title):not(.cell-actions) {
+    align-items: start;
+    row-gap: 2px;
+  }
+
+  .responsive-table td[data-label]:not([data-label=""]):not(.cell-title):not(.cell-actions)::before {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .responsive-table td[data-label]:not([data-label=""]):not(.cell-title):not(.cell-actions) > * {
+    grid-column: 2;
+    justify-self: start;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .responsive-table td[data-label]:not([data-label=""]):not(.cell-title):not(.cell-actions) > .cell-value {
+    justify-self: stretch;
+  }
+
+  .responsive-table .cell-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* 제목 칸 안에서 SKU·상품명·옵션이 여러 줄이면 촘촘하게 쌓는다 */
+  .responsive-table td.cell-title {
+    row-gap: 2px;
+  }
+
+  /* 라벨이 비어 있으면 값만 전체 폭 */
+  .responsive-table td[data-label=""],
+  .responsive-table td:not([data-label]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .responsive-table td[data-label=""]::before,
+  .responsive-table td:not([data-label])::before {
+    content: none;
+  }
+
+  /* 카드 제목 칸 */
+  .responsive-table td.cell-title {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .responsive-table td.cell-title::before {
+    content: none;
+  }
+
+  /* 카드 하단 동작 버튼 */
+  .responsive-table td.cell-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+  }
+
+  .responsive-table td.cell-actions::before {
+    content: none;
+  }
+
+  .responsive-table td.cell-actions .button {
+    flex: 1 1 auto;
+  }
+
+  /* 카드 모드에서는 상세 열도 다시 보여 준다 (필요 시 .col-hide-mobile 로 숨김) */
+  .responsive-table td.col-detail {
+    display: grid;
+  }
+
+  .responsive-table .col-hide-mobile {
+    display: none !important;
+  }
+
+  .responsive-table .align-right,
+  .responsive-table td.right {
+    text-align: left;
+  }
+
+  /* 카드 모드에서는 가로 스크롤 안내가 필요 없음 */
+  .scroll-hint:has(+ .table-scroll .responsive-table) {
+    display: none;
+  }
+}
+
+/* ── 컴포넌트 반응형 ─────────────────── */
+@media (max-width: 1199px) {
+  .toast {
+    left: calc(50% + var(--sidebar-width-compact) / 2);
+  }
+}
+
+@media (max-width: 959px) {
+  .toast {
+    left: 50%;
+  }
+
+  .filter-bar {
+    padding: var(--space-4);
+  }
+
+  .filter-bar .field {
+    flex: 1 1 calc(50% - var(--space-3));
+  }
+
+  .filter-bar .filter-search {
+    flex-basis: 100%;
+  }
+
+  .filter-actions {
+    flex: 1 1 100%;
+  }
+
+  .filter-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .result-summary .secondary-hint {
+    display: none;
+  }
+
+  /* 모바일에서도 "예시 기준 시각"이 보이도록 숨기지 않고 왼쪽 정렬로 둔다 (topbar-date 는 base.css 에서 숨김) */
+  .reference-time {
+    flex-basis: 100%;
+    text-align: left;
+  }
+
+  .reference-time strong {
+    display: inline;
+    margin-left: var(--space-1);
+  }
+}
+
+@media (max-width: 599px) {
+  .card-header,
+  .card-body,
+  .card-list-item {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .filter-bar .field {
+    flex-basis: 100%;
+  }
+
+  .notice {
+    font-size: var(--font-size-xs);
+  }
+
+  .stamps {
+    gap: var(--space-1);
+  }
+
+  .stamp {
+    min-height: 56px;
+  }
+
+  .stat-card {
+    min-height: 0;
+  }
+
+  .stat-card-value {
+    font-size: var(--font-size-2xl);
+  }
+
+  .user-menu-panel {
+    right: auto;
+    left: 0;
+  }
+
+  .faq-item > summary,
+  .disclosure > summary {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .faq-body,
+  .disclosure-body {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+  }
+}

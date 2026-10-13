@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상품 연결 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <style>
+    /* 페이지 전용 스타일 (공통 CSS 이관 요청 대상: .candidate-group / .candidate-option) */
+    /* 후보 라디오 묶음: 44px 이상 조작 영역 */
+    .candidate-group { border: 0; margin: 0; padding: 0; min-width: 0; }
+    .candidate-group legend { padding: 0; }
+    .candidate-option { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+    .candidate-option input { width: 20px; height: 20px; flex: none; }
+  </style>
+</head>
+<body data-page="mappings">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>상품 연결</h1>
+        <p>채널의 판매 옵션을 내부 SKU와 연결합니다. 후보는 직접 확인한 뒤 선택해 주세요.</p>
+      </div>
+      <p class="reference-time">샘플 시나리오 기준 <strong>2026.10.04 09:40</strong></p>
+    </div>
+
+    <div class="notice notice-info" role="note">
+      <p><strong>샘플 내부 연결만 시연합니다. 새로고침하면 초기화됩니다.</strong> 이 화면의 연결은 StockD 안의 내부 SKU 대응표일 뿐이며, 쇼핑몰의 상품·재고·주문에는 아무 영향을 주지 않습니다. 이름이 같아도 자동으로 확정하지 않으니 계정·원본 옵션 ID와 판매 옵션을 확인한 뒤 후보를 직접 선택하세요.</p>
+    </div>
+
+    <section class="card card-flush section" aria-labelledby="candidates-title">
+      <div class="card-header">
+        <div>
+          <h2 id="candidates-title">옵션 연결 후보</h2>
+          <p>옵션마다 내부 SKU 후보를 하나 고르고 ‘시안에 연결 적용’을 누릅니다. 선택하기 전에는 적용되지 않습니다.</p>
+        </div>
+        <span class="badge badge-sample" id="candidate-count">샘플</span>
+      </div>
+      <div class="card-body">
+        <p class="scroll-hint">표를 좌우로 움직여 확인하세요.</p>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="옵션 연결 후보 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:940px">
+          <table class="table responsive-table">
+            <thead>
+              <tr>
+                <th scope="col">채널 상품 / 옵션</th>
+                <th scope="col" class="col-detail">채널 / 계정 / 원본 옵션 ID</th>
+                <th scope="col">내부 SKU 후보</th>
+                <th scope="col">연결 상태</th>
+                <th scope="col">시안 동작</th>
+              </tr>
+            </thead>
+            <tbody id="candidate-rows"></tbody>
+          </table>
+        </div>
+        <p class="table-footnote">‘해제’도 StockD 내부 연결만 되돌립니다. 쇼핑몰에는 어떤 값도 보내지 않습니다.</p>
+      </div>
+    </section>
+
+    <section class="card card-flush section section-gap" aria-labelledby="unlinked-title">
+      <div class="card-header">
+        <div>
+          <h2 id="unlinked-title">미연결 옵션</h2>
+          <p>내부 SKU가 아직 정해지지 않은 옵션입니다. 이 옵션의 수량은 내부 SKU 비교에 합치지 않습니다.</p>
+        </div>
+        <span class="badge badge-sample" id="unlinked-count">샘플</span>
+      </div>
+      <div class="card-body" id="unlinked-body"></div>
+    </section>
+
+    <section class="card card-flush section section-gap" aria-labelledby="history-title">
+      <div class="card-header">
+        <div>
+          <h2 id="history-title">연결 이력</h2>
+          <p>새로 적용하거나 해제하면 맨 위에 추가됩니다. 현재 화면에서만 유지됩니다.</p>
+        </div>
+        <span class="badge badge-sample">샘플</span>
+      </div>
+      <div class="card-body">
+        <div class="table-scroll" tabindex="0" role="region" aria-label="연결 이력 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:760px">
+          <table class="table responsive-table">
+            <thead>
+              <tr>
+                <th scope="col">시각</th>
+                <th scope="col">동작</th>
+                <th scope="col">계정 / 원본 옵션 ID</th>
+                <th scope="col">내부 SKU</th>
+                <th scope="col">구분</th>
+              </tr>
+            </thead>
+            <tbody id="history-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/table.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var S = window.StockD
+      var labels = S.data.labels
+
+      // HTML 이스케이프: 공통 함수 사용
+      var esc = S.table.escapeHtml
+
+      function channelHtml(channel) {
+        return '<span class="channel channel-' + esc(channel) + '">' + esc(labels.channel[channel]) + '</span>'
+      }
+
+      // 선택한 후보(라디오)는 화면 임시 상태로만 보관, 확정은 '적용' 버튼에서만
+      var picked = {}
+
+      function unlinkedMeta(id) {
+        return S.state.unlinked.filter(function (u) { return u.id === id })[0]
+      }
+
+      function inventoryItem(id) {
+        return S.state.inventory.filter(function (i) { return i.id === id })[0]
+      }
+
+      function linkedCount() {
+        return S.state.mappings.filter(function (m) { return m.linked }).length
+      }
+
+      function accountOf(channel) {
+        return labels.account[channel]
+      }
+
+      function renderCandidates() {
+        var rows = S.state.mappings.map(function (mapping) {
+          var meta = unlinkedMeta(mapping.id)
+          if (!meta) return ''
+          var isLinked = Boolean(mapping.linked)
+          var skuCell
+          if (isLinked) {
+            skuCell = '<strong class="sku">' + esc(mapping.linked) + '</strong>'
+          } else {
+            var name = 'cand-' + mapping.id
+            skuCell = '<fieldset class="candidate-group"><legend class="sr-only">' + esc(meta.name + ' ' + meta.option) + '의 내부 SKU 후보</legend>' +
+              mapping.candidates.map(function (sku, index) {
+                var id = name + '-' + index
+                var checked = picked[mapping.id] === sku ? ' checked' : ''
+                return '<label class="candidate-option" for="' + id + '"><input type="radio" id="' + id + '" name="' + name + '" value="' + esc(sku) + '" data-mapping-id="' + esc(mapping.id) + '"' + checked + '> <span class="sku">' + esc(sku) + '</span></label>'
+              }).join('') + '</fieldset>'
+          }
+          var statusHtml = isLinked
+            ? '<span class="badge badge-link">시안 연결됨</span>'
+            : '<span class="badge badge-attention">직접 확인 필요</span>' +
+              (meta.id === 'c3' ? '<span class="secondary">옵션 ID 실계정 검증 대기</span>' : '')
+          var actionHtml = isLinked
+            ? '<button type="button" class="button button-small" data-action="release" data-mapping-id="' + esc(mapping.id) + '" aria-label="' + esc(meta.name + ' ' + meta.option + ' 시안 연결 해제') + '">해제</button>'
+            : '<button type="button" class="button button-primary button-small" data-action="apply" data-mapping-id="' + esc(mapping.id) + '"' + (picked[mapping.id] ? '' : ' disabled') + ' aria-label="' + esc(meta.name + ' ' + meta.option + ' 시안에 연결 적용') + '">시안에 연결 적용</button>' +
+              (picked[mapping.id] ? '' : '<span class="secondary">후보를 먼저 선택하세요</span>')
+          return '<tr>' +
+            '<td class="cell-title" data-label="채널 상품 / 옵션">' + esc(meta.name) + '<span class="secondary">' + esc(meta.option) + ' · 샘플</span></td>' +
+            '<td class="col-detail" data-label="채널 / 계정 / 원본 옵션 ID"><div class="cell-value">' + channelHtml(meta.channel) + '<span class="secondary">' + esc(accountOf(meta.channel)) + ' / ' + esc(labels.fulfillment[meta.fulfillment]) + '</span><span class="sku">' + esc(meta.externalId) + '</span></div></td>' +
+            '<td data-label="내부 SKU 후보"><div class="cell-value">' + skuCell + '</div></td>' +
+            '<td data-label="연결 상태"><div class="cell-value">' + statusHtml + '</div></td>' +
+            '<td class="cell-actions" data-label="시안 동작">' + actionHtml + '</td>' +
+            '</tr>'
+        }).join('')
+        document.getElementById('candidate-rows').innerHTML = rows
+        document.getElementById('candidate-count').textContent = '샘플 ' + S.state.mappings.length + '개 · 연결 ' + linkedCount() + '개'
+      }
+
+      function renderUnlinked() {
+        var rest = S.state.unlinked.filter(function (u) {
+          var m = S.state.mappings.filter(function (x) { return x.id === u.id })[0]
+          return !(m && m.linked)
+        })
+        document.getElementById('unlinked-count').textContent = '미연결 ' + rest.length + '개'
+        var body = document.getElementById('unlinked-body')
+        if (rest.length === 0) {
+          body.innerHTML = '<div class="empty-state" role="status"><h3>미연결 옵션이 없습니다</h3><p>샘플 옵션이 모두 내부 SKU에 연결되었습니다. 새로고침하면 처음 상태로 돌아갑니다.</p></div>'
+          return
+        }
+        body.innerHTML = '<div class="table-scroll" tabindex="0" role="region" aria-label="미연결 옵션 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:760px"><table class="table responsive-table"><thead><tr>' +
+          '<th scope="col">채널 상품 / 옵션</th><th scope="col">채널 / 계정</th><th scope="col">원본 옵션 ID</th><th scope="col">내부 SKU</th></tr></thead><tbody>' +
+          rest.map(function (u) {
+            var item = inventoryItem(u.id)
+            return '<tr>' +
+              '<td class="cell-title" data-label="채널 상품 / 옵션">' + esc(u.name) + '<span class="secondary">' + esc(u.option) + '</span></td>' +
+              '<td data-label="채널 / 계정"><div class="cell-value">' + channelHtml(u.channel) + '<span class="secondary">' + esc(accountOf(u.channel)) + ' / ' + esc(labels.fulfillment[u.fulfillment]) + '</span></div></td>' +
+              '<td data-label="원본 옵션 ID"><div class="cell-value"><span class="sku">' + esc(u.externalId) + '</span></div></td>' +
+              '<td data-label="내부 SKU"><div class="cell-value">' + (item && item.sku ? esc(item.sku) : '<span class="badge badge-neutral">내부 SKU 미연결</span>') + '</div></td>' +
+              '</tr>'
+          }).join('') + '</tbody></table></div>'
+      }
+
+      function renderHistory() {
+        var rows = S.state.mappingHistory.map(function (h) {
+          var actionText = h.action === 'approve' ? '연결 적용' : '연결 해제'
+          return '<tr>' +
+            '<td class="cell-title" data-label="시각"><span class="timestamp">' + esc(h.time.indexOf('-') > -1 ? S.format.formatDateTime(h.time) : h.time) + '</span></td>' +
+            '<td data-label="동작"><div class="cell-value"><span class="badge ' + (h.action === 'approve' ? 'badge-link' : 'badge-neutral') + '">' + actionText + '</span></div></td>' +
+            '<td data-label="계정 / 원본 옵션 ID"><div class="cell-value">' + esc(h.account) + '<span class="sku">' + esc(h.externalId) + '</span></div></td>' +
+            '<td data-label="내부 SKU"><div class="cell-value"><span class="sku">' + esc(h.sku) + '</span></div></td>' +
+            '<td data-label="구분"><div class="cell-value">' + (h.example ? '<span class="badge badge-sample">예시</span>' : '<span class="badge badge-neutral">이번 화면</span>') + '</div></td>' +
+            '</tr>'
+        }).join('')
+        document.getElementById('history-rows').innerHTML = rows
+      }
+
+      function renderAll() {
+        renderCandidates()
+        renderUnlinked()
+        renderHistory()
+      }
+
+      // 이력 맨 위에 추가
+      function pushHistory(action, meta, sku) {
+        S.state.mappingHistory.unshift({
+          id: 'h-' + Date.now(),
+          time: '방금 (예시 시각)',
+          action: action,
+          account: accountOf(meta.channel),
+          externalId: meta.externalId,
+          sku: sku,
+          example: false
+        })
+      }
+
+      function apply(id) {
+        var sku = picked[id]
+        var mapping = S.state.mappings.filter(function (m) { return m.id === id })[0]
+        var meta = unlinkedMeta(id)
+        if (!sku || !mapping || !meta) return
+        mapping.linked = sku
+        var item = inventoryItem(id)
+        if (item) item.sku = sku
+        pushHistory('approve', meta, sku)
+        delete picked[id]
+        renderAll()
+        S.toast('내부 연결 ' + linkedCount() + '/' + S.state.mappings.length + '개 적용 (시안 내부 대응표만 바뀌며 쇼핑몰은 변경되지 않습니다)')
+        focusAfter('[data-action="release"][data-mapping-id="' + id + '"]')
+      }
+
+      function release(id) {
+        var mapping = S.state.mappings.filter(function (m) { return m.id === id })[0]
+        var meta = unlinkedMeta(id)
+        if (!mapping || !meta || !mapping.linked) return
+        var prev = mapping.linked
+        delete mapping.linked
+        var item = inventoryItem(id)
+        if (item) item.sku = null
+        pushHistory('release', meta, prev)
+        renderAll()
+        S.toast('내부 연결을 해제했습니다. 쇼핑몰에는 영향이 없습니다.')
+        focusAfter('input[name="cand-' + id + '"]')
+      }
+
+      // 다시 그린 뒤 초점 복귀
+      function focusAfter(selector) {
+        var el = document.querySelector(selector)
+        if (el) el.focus()
+      }
+
+      document.getElementById('main').addEventListener('change', function (event) {
+        var target = event.target
+        if (target && target.type === 'radio' && target.getAttribute('data-mapping-id')) {
+          var id = target.getAttribute('data-mapping-id')
+          picked[id] = target.value
+          var button = document.querySelector('[data-action="apply"][data-mapping-id="' + id + '"]')
+          if (button) {
+            button.disabled = false
+            var hint = button.nextElementSibling
+            if (hint && hint.classList.contains('secondary')) hint.remove()
+          }
+        }
+      })
+
+      document.getElementById('main').addEventListener('click', function (event) {
+        var button = event.target.closest ? event.target.closest('button[data-action]') : null
+        if (!button || button.disabled) return
+        var id = button.getAttribute('data-mapping-id')
+        if (button.getAttribute('data-action') === 'apply') apply(id)
+        else if (button.getAttribute('data-action') === 'release') release(id)
+      })
+
+      renderAll()
+    })()
+  </script>
+</body>
+</html>

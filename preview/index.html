@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>StockD · 재고와 주문 관리 시안</title>
+  <style>
+    :root {
+      --navy: #ffffff;
+      --ink: #203c37;
+      --muted: #61756f;
+      --blue: #16816a;
+      --line: #dce7e3;
+      --canvas: #f3f6f5;
+      --green: #16816a;
+      --mint-light: #eaf6f1;
+      --amber: #976116;
+      --red: #bd3c3c;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.6 "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+    button, input, select { font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .6; }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, .table-wrap:focus-visible { outline: 3px solid #57ac96; outline-offset: 3px; }
+    .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .app { display: grid; grid-template-columns: 208px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { background: var(--navy); color: var(--ink); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 32px 16px 24px; position: sticky; top: 0; height: 100vh; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 13px; }
+    .brand-mark { width: 28px; height: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .brand-mark i { display: block; border: 2px solid var(--green); border-radius: 2px; }
+    .brand-mark i:nth-child(3) { background: #b9e3d6; }
+    .brand strong { font-size: 24px; font-weight: 750; letter-spacing: -.7px; }
+    .brand-sub { margin: 12px 13px 33px; font-size: 12px; color: var(--muted); }
+    .nav { display: grid; gap: 7px; }
+    .nav button { width: 100%; background: transparent; border: 0; border-radius: 5px; color: #586c65; padding: 12px 13px; text-align: left; display: flex; gap: 12px; align-items: center; font-weight: 600; }
+    .nav button:hover { background: #f1f6f3; color: var(--ink); }
+    .nav button[aria-current="page"] { background: var(--mint-light); color: #146c59; }
+    .nav-count { margin-left: auto; font-size: 11px; background: #fff2db; color: #8b5410; border-radius: 3px; padding: 0 6px; }
+    .sidebar-bottom { margin-top: auto; padding: 24px 13px 0; color: var(--muted); font-size: 12px; }
+    .sidebar-bottom strong { color: var(--ink); display: block; margin-bottom: 5px; }
+    .sidebar-bottom a { color: var(--blue); display: inline-block; margin-top: 15px; }
+    .workspace { min-width: 0; }
+    .preview-strip { background: var(--mint-light); border-bottom: 1px solid #cce6db; color: #356757; padding: 11px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+    .preview-strip p { margin: 0; }
+    .preview-strip strong { font-weight: 750; }
+    .preview-strip button { border: 0; padding: 2px 0; background: transparent; color: #356757; text-decoration: underline; white-space: nowrap; }
+    .topbar { min-height: 66px; border-bottom: 1px solid var(--line); background: white; padding: 17px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .workspace-label { display: flex; align-items: center; gap: 9px; font-weight: 650; }
+    .workspace-label .icon { color: #78879a; width: 17px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; color: var(--muted); font-size: 12px; }
+    .read-only { padding: 3px 9px; background: #f0f3f8; color: #5c6c81; border-radius: 3px; }
+    main { max-width: 1600px; margin: 0 auto; padding: 30px 32px 48px; }
+    .page-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-end; margin-bottom: 24px; }
+    h1 { font-size: 28px; line-height: 1.3; margin: 0 0 8px; font-weight: 750; letter-spacing: -1.1px; }
+    .page-heading p { color: var(--muted); margin: 0; max-width: 75ch; }
+    .reference-time { font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+    .reference-time strong { display: block; color: #43546b; font-size: 13px; font-weight: 600; }
+    h2 { font-size: 18px; font-weight: 750; letter-spacing: -.5px; line-height: 1.45; margin: 0; }
+    h3 { font-size: 15px; margin: 0; font-weight: 700; }
+    p { margin: 0 0 12px; }
+    .panel { background: white; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+    .panel-heading { padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); }
+    .panel-heading p { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+    .panel-body { padding: 20px 22px; }
+    .dashboard-top { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 22px; margin-bottom: 24px; }
+    .pill { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 3px; font-size: 12px; line-height: 1.8; font-weight: 600; white-space: nowrap; }
+    .sample { color: #5c6c81; background: #eff3f8; }
+    .state-normal { color: #23704f; background: #edf7f1; }
+    .state-low, .state-stale { color: #885611; background: #fff4e1; }
+    .state-zero, .state-failed { color: #b23535; background: #fdeeee; }
+    .state-unsupported, .state-unmanaged { color: #687587; background: #eff2f6; }
+    .state-unverified { color: #525cac; background: #f0f0ff; }
+    .channel { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12px; font-weight: 600; }
+    .channel::before { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background: #14a765; }
+    .channel.coupang::before { background: #e26038; }
+    .task-row { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; gap: 13px; align-items: center; padding: 18px 22px; border-bottom: 1px solid #e9edf3; }
+    .task-row:last-child { border-bottom: 0; }
+    .task-icon { width: 36px; height: 36px; background: #fff4e1; color: #976116; display: grid; place-items: center; border-radius: 4px; }
+    .task-icon.blue { background: var(--mint-light); color: var(--green); }
+    .task-row p { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+    .text-button { background: transparent; border: 0; color: var(--blue); padding: 6px 0; font-weight: 600; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+    .text-button .icon { width: 15px; height: 15px; }
+    .connection-row { padding: 17px 22px; border-bottom: 1px solid #e9edf3; }
+    .connection-row:last-child { border-bottom: 0; }
+    .connection-row .first-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .connection-row p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+    .neutral-note { padding: 13px 22px; background: #f8fafc; color: var(--muted); font-size: 12px; }
+    .notice { display: flex; align-items: flex-start; gap: 9px; background: #edf5f1; color: #416457; padding: 13px 16px; border-radius: 4px; font-size: 12px; margin: 0 0 18px; }
+    .notice .icon { width: 17px; height: 17px; margin-top: 2px; }
+    .notice p { margin: 0; }
+    .notice.warning { background: #fff6e8; color: #855a24; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+    .field { display: grid; gap: 5px; min-width: 122px; }
+    .field label { font-size: 12px; color: #55667c; font-weight: 600; }
+    .field.search-field { flex: 1 1 230px; }
+    .search-input { position: relative; }
+    .search-input .icon { width: 17px; height: 17px; position: absolute; left: 12px; top: 12px; color: #8895a7; }
+    input, select { background: white; color: var(--ink); border: 1px solid #cfd8e5; border-radius: 4px; min-height: 40px; width: 100%; padding: 8px 11px; }
+    .search-input input { padding-left: 37px; }
+    input::placeholder { color: #8a97a9; }
+    .button { min-height: 40px; background: white; color: #40516b; border: 1px solid #cfd8e5; border-radius: 4px; padding: 8px 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+    .button.primary { background: var(--blue); color: white; border-color: var(--blue); }
+    .button:hover { background: #f3f6fb; }
+    .button.primary:hover { background: #126c59; }
+    .button.small { min-height: 32px; font-size: 12px; padding: 5px 10px; }
+    .result-summary { display: flex; justify-content: space-between; gap: 12px; padding: 13px 22px; font-size: 12px; color: var(--muted); }
+    .result-summary strong { color: #44546c; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    .scroll-hint { display: none; margin: 0; padding: 10px 18px; background: #f7f9fc; border-top: 1px solid var(--line); color: #5c6d83; font-size: 12px; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: 14px; }
+    th { background: #f5f8f6; color: #536b60; font-size: 12px; font-weight: 650; padding: 12px 17px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); vertical-align: top; }
+    th span { display: block; font-weight: 400; margin-top: 3px; color: #8290a2; }
+    td { padding: 16px 17px; border-bottom: 1px solid #e8edf4; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcff; }
+    .comparison-table { min-width: 760px; }
+    .inventory-table { min-width: 1040px; }
+    .orders-table { min-width: 1050px; }
+    .mapping-table { min-width: 940px; }
+    .product-button { background: none; border: 0; padding: 0; color: var(--ink); font-size: 14px; font-weight: 650; text-align: left; line-height: 1.5; }
+    .product-button:hover { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+    .secondary { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .sku { font-size: 12px; color: #62758c; letter-spacing: .2px; }
+    .number { font-variant-numeric: tabular-nums; font-weight: 750; font-size: 17px; text-align: right; }
+    .number.zero { color: var(--red); }
+    .number.low { color: var(--amber); }
+    .number.none { color: #8a98a9; }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .amount-cell { min-width: 110px; }
+    .amount-cell .pill { margin-top: 4px; }
+    .timestamp { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .table-footnote { padding: 13px 22px; background: #fbfcfe; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .section-gap { margin-top: 24px; }
+    .empty { padding: 50px 20px; text-align: center; }
+    .empty h3 { margin: 0 0 5px; }
+    .empty p { color: var(--muted); font-size: 13px; }
+    .empty .button { margin-top: 8px; }
+    .connection-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+    .status-block { border-bottom: 1px solid var(--line); padding: 20px 22px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .status-block strong { display: block; font-size: 18px; }
+    .status-block p { color: var(--muted); font-size: 12px; margin: 3px 0 0; }
+    .status-dot { background: #eff3f8; color: #687a90; padding: 8px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .key-value { display: grid; grid-template-columns: 126px minmax(0,1fr); gap: 11px 16px; margin: 0; font-size: 13px; }
+    .key-value dt { color: var(--muted); }
+    .key-value dd { margin: 0; overflow-wrap: anywhere; }
+    .steps { padding-left: 19px; margin: 18px 0; }
+    .steps li { padding: 0 0 13px 5px; }
+    .steps li::marker { color: #5474a5; font-weight: 750; }
+    .steps strong { display: block; }
+    .steps span { color: var(--muted); font-size: 12px; }
+    .links { display: flex; flex-wrap: wrap; gap: 9px 18px; font-size: 12px; }
+    .setting-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .setting-row p { color: var(--muted); font-size: 12px; margin: 3px 0 0; }
+    .threshold-field { width: 95px; }
+    .alert-tabs { display: flex; gap: 20px; padding: 0 22px; border-bottom: 1px solid var(--line); }
+    .alert-tabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 15px 2px; color: var(--muted); font-weight: 600; }
+    .alert-tabs button[aria-pressed="true"] { border-bottom-color: var(--blue); color: var(--blue); }
+    .alert-item { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; gap: 15px; align-items: flex-start; padding: 22px; border-bottom: 1px solid #e8edf4; }
+    .alert-item:last-child { border-bottom: 0; }
+    .alert-item p { margin: 5px 0; color: var(--muted); font-size: 12px; }
+    .alert-item .pill { margin-right: 5px; }
+    .alert-item.acknowledged { background: #fafbfd; }
+    .alert-item.acknowledged h3 { color: #6b7a8e; }
+    .mapping-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .candidate-select { width: 180px; min-height: 33px; padding: 5px 8px; font-size: 12px; }
+    .history-list { margin: 0; padding: 0; list-style: none; }
+    .history-list li { padding: 12px 22px; border-bottom: 1px solid #e8edf4; font-size: 12px; }
+    .history-list li:last-child { border: 0; }
+    .history-list span { color: var(--muted); margin-right: 12px; }
+    .footer-note { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #7e8c9f; margin: 23px 0 0; }
+    .footer-note .icon { width: 14px; height: 14px; }
+    dialog { border: 1px solid #ccd6e4; padding: 0; width: min(680px,calc(100% - 32px)); max-height: calc(100% - 48px); border-radius: 8px; color: var(--ink); background: white; }
+    dialog::backdrop { background: rgba(16,32,53,.46); }
+    .dialog-heading { padding: 23px 26px 19px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+    .dialog-heading h2 { font-size: 21px; }
+    .dialog-heading p { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+    .icon-button { width: 32px; height: 32px; display: grid; place-items: center; background: white; border: 1px solid var(--line); border-radius: 4px; flex-shrink: 0; }
+    .dialog-body { padding: 22px 26px 26px; }
+    .dialog-body .notice { margin-top: 18px; }
+    .dialog-body h3 { margin: 21px 0 10px; }
+    .dialog-body p { font-size: 13px; color: #576b83; }
+    .dialog-body .key-value { grid-template-columns: 145px minmax(0,1fr); }
+    .detail-quantity { padding: 17px 20px; background: #f2f8f5; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-left: 3px solid #65ab95; }
+    .detail-quantity .number { font-size: 30px; }
+    .detail-quantity .secondary { font-size: 12px; }
+    .toast { position: fixed; bottom: 24px; left: calc(50% + 104px); transform: translateX(-50%); background: #244d40; color: white; border-radius: 5px; padding: 14px 20px; width: max-content; max-width: calc(100% - 32px); font-size: 13px; z-index: 10; box-shadow: 0 4px 18px rgba(20,40,60,.15); }
+    .toast[hidden] { display: none; }
+    .review-intro { display: flex; align-items: center; gap: 18px; padding: 22px; background: #f7fbf8; border-bottom: 1px solid var(--line); }
+    .box-guide { width: 70px; height: 70px; flex: 0 0 70px; }
+    .review-intro h2 { margin-bottom: 3px; }
+    .review-intro p { font-size: 12px; color: var(--muted); margin: 0; }
+    .review-progress { padding: 17px 22px; border-bottom: 1px solid var(--line); }
+    .progress-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .progress-label strong { font-size: 14px; }
+    .progress-label span { font-size: 11px; color: var(--muted); }
+    #reviewProgress, #dailyProgress { display: block; width: 100%; height: 8px; appearance: none; border: 0; border-radius: 2px; overflow: hidden; background: #e4ede8; accent-color: var(--green); }
+    #reviewProgress::-webkit-progress-bar, #dailyProgress::-webkit-progress-bar { background: #e4ede8; }
+    #reviewProgress::-webkit-progress-value, #dailyProgress::-webkit-progress-value { background: var(--green); }
+    #reviewProgress::-moz-progress-bar, #dailyProgress::-moz-progress-bar { background: var(--green); }
+    .review-progress > p { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .mission-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 8px; }
+    .mission-state { font-size: 11px; color: #718178; white-space: nowrap; }
+    .mission-state.complete { color: #146c59; font-weight: 650; }
+    .badge-line { display: flex; flex-wrap: wrap; gap: 9px; padding: 15px 22px; background: #fcfdfc; border-top: 1px solid var(--line); }
+    .badge-caption { width: 100%; font-size: 11px; color: var(--muted); }
+    .achievement-badge { display: inline-flex; gap: 6px; align-items: center; border: 1px solid #dce5df; border-radius: 4px; color: #66786c; padding: 4px 8px; font-size: 11px; }
+    .achievement-badge .icon { width: 14px; height: 14px; }
+    .achievement-badge.earned { background: var(--mint-light); color: #146c59; border-color: #bcdccd; }
+    .mission-case-list { display: grid; gap: 12px; }
+    .mission-case { border: 1px solid var(--line); border-radius: 5px; padding: 16px; }
+    .mission-case h3 { margin: 0; }
+    .mission-case p { margin: 10px 0 0; }
+    .mission-case-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .mission-case .number { flex-shrink: 0; font-size: 25px; }
+    .mission-case .quantity-label { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+    .mission-record { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .mission-record p { margin: 0; font-size: 12px; max-width: 39ch; }
+    .review-confirmation { color: #146c59 !important; font-weight: 600; margin: 12px 0 0; }
+    .daily-date { display: block; font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .daily-task .text-button { min-height: 44px; }
+    .daily-task.complete .task-icon { background: var(--mint-light); color: #146c59; }
+    .daily-task .daily-task-state { font-size: 12px; font-weight: 650; color: var(--muted); }
+    .daily-task.complete .daily-task-state { color: #146c59; }
+    .daily-history { padding: 16px 22px 18px; }
+    .daily-history-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; font-size: 12px; margin-bottom: 11px; }
+    .daily-history-heading span { color: var(--muted); }
+    .daily-stamps { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px; list-style: none; padding: 0; margin: 0; }
+    .daily-stamp { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); font-size: 11px; }
+    .daily-stamp .icon { width: 17px; height: 17px; }
+    .daily-stamp.done { color: #146c59; border-color: #aad4c5; background: var(--mint-light); }
+    .daily-stamp.today { outline: 1px solid #578e7e; outline-offset: 2px; }
+    .daily-history-note { margin: 12px 0 0; color: var(--muted); font-size: 11px; }
+    .sample-practice { border-top: 1px solid var(--line); background: #fcfdfc; }
+    .sample-practice > summary { min-height: 48px; padding: 13px 22px; cursor: pointer; font-weight: 650; font-size: 13px; }
+    .sample-practice > summary span { color: var(--muted); font-size: 11px; font-weight: 400; margin-left: 7px; }
+    .practice-body { border-top: 1px solid var(--line); }
+    .daily-view-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px 17px; margin-bottom: 16px; border: 1px solid #cce6db; border-radius: 5px; background: var(--mint-light); font-size: 12px; }
+    .daily-view-note p { margin: 0; }
+    .daily-view-note .text-button { min-height: 44px; }
+    .daily-reset-button { min-height: 44px !important; flex-shrink: 0; }
+    .story-invite { display: flex; align-items: center; gap: 14px; margin: 0 22px 18px; padding: 15px; border: 1px solid #dce7e3; border-radius: 6px; background: #eaf6f1; color: #203c37; }
+    .story-invite .box-guide { width: 46px; height: 46px; flex-basis: 46px; }
+    .story-invite-copy { flex: 1; min-width: 0; }
+    .story-invite h3 { margin: 0; font-size: 14px; }
+    .story-invite p { margin: 4px 0 0; font-size: 12px; }
+    .story-invite small { display: block; margin-top: 4px; color: #576b63; font-size: 11px; }
+    .story-invite .button, .story-reader .button, .story-cut { min-height: 44px; }
+    .story-invite .button { flex-shrink: 0; }
+    button:disabled { cursor: default; }
+    .story-invite .button:disabled { background: #f6faf8; color: #657970; border-color: #c9d8d1; }
+    dialog:has(.story-reader) { width: min(820px, calc(100vw - 32px)); }
+    dialog:has(.story-reader) .icon-button { min-width: 44px; min-height: 44px; }
+    .story-scene { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 24px; align-items: center; }
+    #storySceneArt { display: block; width: 100%; border-radius: 8px; background: #eaf6f1; }
+    .story-scene-copy { min-width: 0; }
+    .dialog-body .story-chapter { margin: 0 0 7px; color: #16816a; font-size: 12px; font-weight: 650; }
+    .dialog-body #storySceneTitle { font-size: 20px; color: #203c37; margin: 0 0 12px; }
+    .dialog-body #storySceneText { font-size: 14px; color: #203c37; line-height: 1.85; margin: 0; word-break: keep-all; }
+    .story-navigation { display: flex; gap: 8px; margin-top: 22px; }
+    .story-navigation .button { flex: 1; }
+    .story-navigation .button:disabled { color: #718178; background: #f7f9f8; }
+    .dialog-body .story-unlock-note { margin: 18px 0; padding: 12px 14px; background: #f6faf8; color: #576b63; border-left: 3px solid #bcdccd; font-size: 12px; }
+    .story-episodes { display: grid; gap: 12px; }
+    .story-episode h4 { margin: 0 0 7px; font-size: 12px; color: #576b63; }
+    .story-cuts { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 7px; }
+    .story-cut { padding: 7px 3px; border: 1px solid #dce7e3; background: white; border-radius: 5px; color: #203c37; font-size: 12px; }
+    .story-cut span { display: block; font-size: 10px; color: #576b63; margin-top: 2px; }
+    .story-cut[aria-current="step"] { background: #eaf6f1; border-color: #16816a; font-weight: 700; }
+    .story-cut:disabled { color: #718178; background: #f6f8f7; }
+    .story-reader .story-storage-note { font-size: 11px; margin-bottom: 0; color: #576b63; }
+    .motion-setting { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+    #motionToggle { width: 18px; height: 18px; min-height: 0; padding: 0; margin: 0; accent-color: var(--green); }
+    .toast-check { display: inline-block; margin-right: 9px; font-weight: 750; }
+    body[data-effects="on"] .toast.confirmation { animation: confirmation-in 140ms ease-out; }
+    @keyframes confirmation-in { from { opacity: .5; margin-bottom: -4px; } to { opacity: 1; margin-bottom: 0; } }
+    @media (min-width: 1600px) { main { padding-top: 38px; } }
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 180px minmax(0,1fr); }
+      .sidebar { padding-left: 12px; padding-right: 12px; }
+      .dashboard-top { grid-template-columns: minmax(0,1.4fr) minmax(260px,1fr); gap: 16px; }
+      main { padding: 25px 22px 40px; }
+      .topbar, .preview-strip { padding-left: 22px; padding-right: 22px; }
+      .reference-time { display: none; }
+      .task-row { grid-template-columns: 30px minmax(0,1fr); padding: 17px; gap: 10px; }
+      .task-row .text-button { grid-column: 2; padding: 0; }
+      .task-icon { width: 30px; height: 30px; }
+      .toast { left: calc(50% + 90px); }
+    }
+    @media (max-width: 960px) {
+      .app { display: block; }
+      .sidebar { position: static; height: auto; padding: 18px 20px 0; }
+      .brand { padding: 0; }
+      .brand strong { font-size: 21px; }
+      .brand-mark { width: 23px; height: 24px; }
+      .brand-sub, .sidebar-bottom { display: none; }
+      .nav { display: flex; overflow-x: auto; gap: 3px; margin: 18px -20px 0; padding: 0 12px; scrollbar-width: thin; }
+      .nav button { width: auto; flex-shrink: 0; border-radius: 4px 4px 0 0; padding: 11px 10px; font-size: 12px; gap: 6px; }
+      .nav button .icon { width: 15px; height: 15px; }
+      .nav-count { display: none; }
+      .preview-strip { align-items: flex-start; font-size: 11px; padding: 10px 20px; gap: 10px; }
+      .preview-strip p span { display: block; }
+      .topbar { padding: 12px 20px; min-height: 52px; }
+      .topbar-right .date { display: none; }
+      .workspace-label { font-size: 12px; }
+      main { padding: 24px 20px 34px; }
+      h1 { font-size: 24px; }
+      .page-heading { margin-bottom: 20px; }
+      .page-heading p { font-size: 12px; }
+      .dashboard-top { grid-template-columns: 1fr; gap: 18px; margin-bottom: 18px; }
+      .task-row { grid-template-columns: 32px minmax(0,1fr) auto; padding: 17px 20px; }
+      .task-row .text-button { grid-column: auto; }
+      .panel-heading { padding: 17px 20px; }
+      .panel-body { padding: 18px 20px; }
+      .connection-grid { grid-template-columns: 1fr; gap: 18px; }
+      .toolbar { padding: 16px 18px; gap: 11px; }
+      .field { flex: 1 1 calc(50% - 6px); min-width: 0; }
+      .field.search-field { flex-basis: 100%; }
+      .toolbar > .button { flex: 1; }
+      .button.small, .text-button, .nav button, .icon-button { min-height: 44px; }
+      .icon-button { min-width: 44px; }
+      .result-summary { padding: 12px 18px; }
+      .result-summary .secondary-hint { display: none; }
+      .toast { left: 50%; }
+      .section-gap { margin-top: 18px; }
+      .scroll-hint { display: block; }
+    }
+    @media (max-width: 480px) {
+      main { padding: 23px 14px 30px; }
+      .preview-strip, .topbar { padding-left: 14px; padding-right: 14px; }
+      .preview-strip button { font-size: 11px; }
+      .task-row { grid-template-columns: 30px minmax(0,1fr); gap: 10px; }
+      .task-row .text-button { grid-column: 2; }
+      .review-intro { padding: 17px 16px; gap: 12px; }
+      .box-guide { width: 64px; height: 64px; flex-basis: 64px; }
+      .review-progress { padding: 16px; }
+      .progress-label { flex-wrap: wrap; gap: 4px 10px; }
+      .badge-line { padding: 14px 16px; }
+      .motion-setting { align-self: flex-start; }
+      .mission-record .button { width: 100%; }
+      .daily-history { padding: 15px 16px 18px; }
+      .story-invite { margin: 0 16px 18px; flex-wrap: wrap; gap: 10px; }
+      .story-invite .box-guide { display: none; }
+      .story-invite .button { width: 100%; }
+      .story-scene { grid-template-columns: 1fr; gap: 18px; }
+      #storySceneArt { max-height: 190px; }
+      .story-cuts { gap: 5px; }
+      .daily-stamps { gap: 4px; }
+      .daily-stamp { font-size: 10px; }
+      .sample-practice > summary { padding: 13px 16px; }
+      .sample-practice > summary span { display: block; margin-left: 0; }
+      .daily-view-note { padding: 12px; }
+      .daily-reset-button { align-self: flex-start; }
+      .panel-heading { padding: 16px; }
+      .panel-heading h2 { font-size: 16px; }
+      .connection-row, .panel-body, .status-block { padding: 17px 16px; }
+      .notice { font-size: 11px; padding: 11px 12px; }
+      .key-value { grid-template-columns: 94px minmax(0,1fr); gap: 9px 10px; font-size: 12px; }
+      .alert-item { grid-template-columns: 30px minmax(0,1fr); padding: 18px 16px; gap: 10px; }
+      .alert-item > .button, .alert-item > .pill { grid-column: 2; justify-self: start; }
+      .dialog-heading { padding: 18px; }
+      .dialog-body { padding: 18px; }
+      .dialog-body .key-value { grid-template-columns: 100px minmax(0,1fr); font-size: 12px; }
+      .setting-row { align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-dashboard" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v4h-7zM14 11h7v10h-7zM3 14h7v7H3z"/></symbol>
+    <symbol id="icon-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10M7.5 5l9 4"/></symbol>
+    <symbol id="icon-orders" viewBox="0 0 24 24"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8zM8 12h8M8 16h5"/></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m9 15 6-6M8 17l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 7l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 21h4M12 2v2"/></symbol>
+    <symbol id="icon-plug" viewBox="0 0 24 24"><path d="M8 3v5M16 3v5M5 8h14v3a7 7 0 0 1-14 0zM12 18v4"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="icon-warning" viewBox="0 0 24 24"><path d="m12 3 10 18H2zM12 9v5M12 17h.01"/></symbol>
+    <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-store" viewBox="0 0 24 24"><path d="M3 9 5 3h14l2 6M3 9v3h4V9h5v3h5V9h4v3M5 12v9h14v-9M9 21v-6h6v6"/></symbol>
+  </svg>
+  <div class="app">
+    <aside class="sidebar" aria-label="주 메뉴">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>StockD</strong></div>
+      <p class="brand-sub">재고와 주문을 한곳에서</p>
+      <nav class="nav" aria-label="관리 화면">
+        <button data-view="dashboard" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-dashboard"/></svg>대시보드</button>
+        <button data-view="inventory"><svg class="icon" aria-hidden="true"><use href="#icon-box"/></svg>통합 재고</button>
+        <button data-view="orders"><svg class="icon" aria-hidden="true"><use href="#icon-orders"/></svg>통합 주문</button>
+        <button data-view="mapping"><svg class="icon" aria-hidden="true"><use href="#icon-link"/></svg>상품 연결<span class="nav-count" id="mappingCount">3</span></button>
+        <button data-view="alerts"><svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg>알림 예시<span class="nav-count" id="alertCount">5</span></button>
+        <button data-view="connections"><svg class="icon" aria-hidden="true"><use href="#icon-plug"/></svg>연결·설정</button>
+      </nav>
+      <div class="sidebar-bottom"><strong>화면을 먼저 살펴보세요</strong>네이버 스마트스토어<br>쿠팡 판매자배송·로켓그로스<a href="https://app.notion.com/p/3ef15a85fa868135ae78d2102a1ad7b1" target="_blank" rel="noopener noreferrer">기획 문서 보기</a></div>
+    </aside>
+    <div class="workspace">
+      <div class="preview-strip"><p><strong>샘플 데이터 · 실제 API 미연동</strong><span>　화면 구성과 사용 흐름을 확인하는 시안입니다.</span></p><button data-action="about">시안 안내</button></div>
+      <header class="topbar"><div class="workspace-label"><svg class="icon" aria-hidden="true"><use href="#icon-store"/></svg>첫 번째 작업 공간 <span class="pill sample">샘플</span></div><div class="topbar-right"><span class="date">예시 기준 2026.10.04</span><span class="read-only">쇼핑몰 조회 전용</span></div></header>
+      <main id="main" tabindex="-1"></main>
+    </div>
+  </div>
+  <dialog id="detailDialog" aria-labelledby="dialogTitle"><div id="dialogContent"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    // 상품·주문은 가상 샘플이며 일일 확인 날짜와 완료 여부만 이 브라우저에 저장합니다.
+    const inventory = [
+      { id: 'n1', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', channel: 'naver', fulfillment: 'seller', quantity: 18, state: 'normal', lastSuccess: '09:40', lastAttempt: '09:40', externalId: 'DEMO-N-101', detail: '정상 조회된 채널 등록 재고의 표시 예시입니다.' },
+      { id: 'c1', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', channel: 'coupang', fulfillment: 'seller', quantity: 12, state: 'normal', lastSuccess: '09:38', lastAttempt: '09:38', externalId: 'DEMO-C-201', detail: '쿠팡 판매자배송의 amountInStock에 해당하는 등록 재고 예시입니다.' },
+      { id: 'r1', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', channel: 'coupang', fulfillment: 'rocket', quantity: 4, state: 'low', lastSuccess: '09:35', lastAttempt: '09:35', externalId: 'DEMO-R-301', detail: '로켓그로스 totalOrderableQuantity에 해당하는 주문가능 재고 예시입니다. 창고의 실제 보유 재고와 합산하지 않습니다.' },
+      { id: 'n2', sku: 'MUG-IV-320', name: '데일리 머그', option: '아이보리 / 320ml', channel: 'naver', fulfillment: 'seller', quantity: 0, state: 'zero', lastSuccess: '09:40', lastAttempt: '09:40', externalId: 'DEMO-N-102', detail: '성공한 조회에서 수량 0을 받은 품절 예시입니다. 조회 실패와 구분합니다.' },
+      { id: 'c2', sku: null, name: '데일리 머그', option: '아이보리 / 320ml', channel: 'coupang', fulfillment: 'seller', quantity: 7, state: 'stale', lastSuccess: '09:02', lastAttempt: '09:39', externalId: 'DEMO-C-202', detail: '09:02 마지막 성공값 7개를 보존했습니다. 09:39 조회 오류 예시로 현재 수량은 확인되지 않았습니다.' },
+      { id: 'r2', sku: 'BOX-GR-M', name: '접이식 보관함', option: '그레이 / M', channel: 'coupang', fulfillment: 'rocket', quantity: null, state: 'failed', lastSuccess: null, lastAttempt: '09:36', externalId: 'DEMO-R-302', detail: '첫 조회부터 실패한 상태 예시입니다. 이전 성공값이 없어 수량을 비워 두고 품절로 처리하지 않습니다.' },
+      { id: 'n3', sku: 'TAPE-IV-01', name: '페이퍼 테이프', option: '아이보리 / 1개', channel: 'naver', fulfillment: 'seller', quantity: null, state: 'unmanaged', lastSuccess: '09:40', lastAttempt: '09:40', externalId: 'DEMO-N-103', detail: '표준형 옵션의 useStockManagement=false 예시입니다. 문서상 9,999 값이 있더라도 보유 수량으로 표시하지 않습니다.' },
+      { id: 'n4', sku: 'TAG-KR-10', name: '메시지 태그', option: '기본 / 10장', channel: 'naver', fulfillment: 'seller', quantity: null, state: 'unsupported', lastSuccess: null, lastAttempt: '09:40', externalId: 'DEMO-N-104', detail: '해당 조회 기능이 제공되지 않을 때의 화면 표시만 보여주는 가상 사례입니다. 이 상품이나 네이버 API가 실제로 미지원이라는 뜻은 아닙니다.' },
+      { id: 'c3', sku: null, name: '드로잉 페이퍼', option: '화이트 / A4', channel: 'coupang', fulfillment: 'seller', quantity: null, state: 'unverified', lastSuccess: null, lastAttempt: '09:39', externalId: 'DEMO-C-203', detail: '임시저장 상품의 옵션 ID와 조회 지원을 아직 확인하지 못한 예시입니다. 지원 미확인과 품절은 구분합니다.' },
+      { id: 'n5', sku: null, name: '코튼 파우치', option: '블랙 / M', channel: 'naver', fulfillment: 'seller', quantity: 3, state: 'low', lastSuccess: '09:40', lastAttempt: '09:40', externalId: 'DEMO-N-105', detail: '등록 재고 3개인 부족 상태 예시입니다. 연결 후보가 있어도 운영자가 확정하기 전에는 내부 SKU에 합치지 않습니다.' }
+    ];
+    const orders = [
+      { id: 'DEMO-NO-101', date: '2026-10-04', time: '09:12', channel: 'naver', fulfillment: 'seller', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', quantity: 2, state: 'paid', label: '결제 완료', original: 'PAYED', claim: '없음', claimQuantity: 0 },
+      { id: 'DEMO-NO-102', date: '2026-10-04', time: '08:45', channel: 'naver', fulfillment: 'seller', sku: 'MUG-IV-320', name: '데일리 머그', option: '아이보리 / 320ml', quantity: 1, state: 'shipping', label: '배송 중', original: 'DELIVERING', claim: '없음', claimQuantity: 0 },
+      { id: 'DEMO-NO-103', date: '2026-10-03', time: '14:30', channel: 'naver', fulfillment: 'seller', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', quantity: 3, state: 'claim', label: '배송 완료', original: 'DELIVERED', claim: '부분 반품 요청', claimQuantity: 1 },
+      { id: 'DEMO-CO-201', date: '2026-10-04', time: '09:03', channel: 'coupang', fulfillment: 'seller', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', quantity: 1, state: 'paid', label: '결제 완료', original: 'ACCEPT', claim: '없음', claimQuantity: 0 },
+      { id: 'DEMO-CO-202', date: '2026-10-03', time: '11:20', channel: 'coupang', fulfillment: 'seller', sku: 'MUG-IV-320', name: '데일리 머그', option: '아이보리 / 320ml', quantity: 2, state: 'claim', label: '취소 확인 예시', original: '별도 취소 조회', claim: '취소 완료', claimQuantity: 2 },
+      { id: 'DEMO-RO-301', date: '2026-10-03', time: '16:15', channel: 'coupang', fulfillment: 'rocket', sku: 'BAG-NT-S', name: '코튼 파우치', option: '내추럴 / S', quantity: 2, state: 'limited', label: '상태 미확인', original: '응답 상태 필드 미확인', claim: '지원 미확인', claimQuantity: null }
+    ];
+    const mappings = [
+      { id: 'c2', candidates: ['MUG-IV-320', 'MUG-WH-320'], chosen: 'MUG-IV-320' },
+      { id: 'c3', candidates: ['PAPER-WH-A4', 'PAPER-WH-A5'], chosen: 'PAPER-WH-A4' },
+      { id: 'n5', candidates: ['BAG-BK-M', 'BAG-BK-S'], chosen: 'BAG-BK-M' }
+    ];
+    const alerts = [
+      { id: 'a1', type: 'stock', title: '로켓그로스 주문가능 재고가 낮습니다', description: '코튼 파우치 · 내추럴 / S · 주문가능 재고 4개, 예시 기준 5개', time: '09:35', target: 'inventory', item: 'r1', acknowledged: false },
+      { id: 'a2', type: 'stock', title: '스마트스토어 등록 재고가 0입니다', description: '데일리 머그 · 아이보리 / 320ml · 정상 조회된 품절 사례', time: '09:40', target: 'inventory', item: 'n2', acknowledged: false },
+      { id: 'a3', type: 'sync', title: '이전 재고를 유지하고 있습니다', description: '쿠팡 판매자배송 · 최근 조회 실패 · 마지막 성공 09:02, 7개 유지', time: '09:39', target: 'inventory', item: 'c2', acknowledged: false },
+      { id: 'a4', type: 'sync', title: '첫 조회에서 수량을 확인하지 못했습니다', description: '로켓그로스 · 접이식 보관함 · 이전 성공값 없음, 수량 —', time: '09:36', target: 'inventory', item: 'r2', acknowledged: false },
+      { id: 'a5', type: 'mapping', title: '내부 SKU 연결을 확인해 주세요', description: '채널 옵션 3개의 후보를 준비했습니다. 직접 확인한 후 연결합니다.', time: '09:40', target: 'mapping', item: null, acknowledged: false }
+    ];
+    const stateLabels = { normal: '정상 예시', low: '부족 예시', zero: '품절', stale: '확인 지연', failed: '조회 실패', unsupported: '미지원 예시', unmanaged: '관리 미사용', unverified: '지원 미확인' };
+    const titles = {
+      dashboard: ['오늘 확인할 일', '채널별 재고와 확인할 항목을 한곳에서 살펴봅니다.'],
+      inventory: ['통합 재고', '옵션별 수량, 수량의 의미와 마지막 확인 시각을 함께 봅니다.'],
+      orders: ['통합 주문', '주문 행별 수량과 조회된 상태, 부분 클레임을 구분합니다.'],
+      mapping: ['상품 연결', '채널의 판매 옵션을 내부 SKU와 연결합니다. 후보는 직접 확인해 주세요.'],
+      alerts: ['알림 예시', '부족 재고와 조회 오류를 따로 확인하고 확인 이력을 남깁니다.'],
+      connections: ['연결·설정', '계정의 실제 연결 상태와 연결 전 준비할 내용을 확인합니다.']
+    };
+    const state = { view: 'dashboard', inventoryFilters: { search: '', channel: '', fulfillment: '', status: '' }, orderFilters: { search: '', channel: '', fulfillment: '', status: '', from: '2026-10-03', to: '2026-10-04' }, alertFilter: 'open', threshold: 5, history: [], missions: { stock: false, sync: false }, badges: { firstLink: false, reviewRound: false }, effects: true, practiceOpen: false, dialogReturnFocus: null };
+    const main = document.getElementById('main');
+    const dialog = document.getElementById('detailDialog');
+    let toastTimer;
+    const dailyStorageKey = 'stockd.daily-checks.v1';
+    const dailyTasks = ['opened', 'inventory', 'orders'];
+    const dailyDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' });
+    const dailyState = { date: currentDailyDate(), days: {}, storageAvailable: true };
+    dailyState.days = readDailyDays();
+    const storyStorageKey = 'stockd.story-progress.v1';
+    const storyChapters = ['바람 우체국으로', '등대의 작은 불빛', '다음 길의 약속'];
+    const storyScenes = [
+      ['지도 발견', '상자 친구는 낡은 지도에서 바람 우체국을 찾았습니다. 작은 편지를 품고 첫걸음을 뗐습니다.'],
+      ['작은 다리', '개울 위 다리가 바람에 살짝 흔들렸습니다. 상자 친구는 편지를 꼭 안고 천천히 건넜습니다.'],
+      ['갈림길', '숲 끝에서 두 갈래 길을 만났습니다. 지도 속 깃털 표시를 따라 밝은 길로 향했습니다.'],
+      ['바람 우체통', '언덕 위에서 작은 우체통이 기다리고 있었습니다. 상자 친구는 편지를 넣고 덮개를 조용히 닫았습니다.'],
+      ['편지 도착', '멀리서 편지를 받은 친구의 종소리가 들렸습니다. 상자 친구는 지도에 첫 여행의 별을 그렸습니다.'],
+      ['유리 조각', '해변에서 햇빛을 담은 유리 조각을 발견했습니다. 상자 친구는 그 빛을 등대에 전하고 싶었습니다.'],
+      ['바닷길', '파도가 물러나자 바닷길이 나타났습니다. 상자 친구는 반짝이는 돌 사이를 따라 걸었습니다.'],
+      ['바람 언덕', '등대 앞 언덕에서 바람이 세게 불었습니다. 상자 친구는 낮은 풀 곁에서 잠깐 숨을 골랐습니다.'],
+      ['작은 불빛', '등대 창가에 유리 조각을 놓았습니다. 저녁빛이 조각을 지나 작은 불빛을 만들었습니다.'],
+      ['바다의 인사', '먼 배가 불빛을 보고 조용히 손을 흔들었습니다. 상자 친구도 덮개를 살짝 들어 인사했습니다.'],
+      ['다시 지도', '상자 친구는 쉬는 자리에서 지도를 펼쳤습니다. 아직 이름 없는 길 하나가 눈에 들어왔습니다.'],
+      ['새 친구', '길 입구에서 작은 종이배 친구를 만났습니다. 둘은 서로의 여행 이야기를 나누었습니다.'],
+      ['나무 쉼터', '큰 나무 아래에 둘만의 쉼터를 만들었습니다. 잠깐 쉬어도 여행은 이어진다는 것을 알았습니다.'],
+      ['지도 전달', '상자 친구는 지도에 발견한 길을 그려 넣었습니다. 종이배 친구에게 한 장을 접어 건넸습니다.'],
+      ['다음 여행 약속', '두 친구는 다음 바람이 불면 다시 만나기로 했습니다. 상자 친구는 새 여행을 기다리며 지도를 품었습니다.']
+    ];
+    const storyState = { unlockedDates: [], lastViewed: 0, viewIndex: 0, storageAvailable: true };
+    Object.assign(storyState, readStoryProgress());
+
+    function cleanStoryProgress(value) {
+      if (!value || typeof value !== 'object' || value.version !== 1 || !Array.isArray(value.unlockedDates)) return { unlockedDates: [], lastViewed: 0 };
+      const today = currentDailyDate();
+      // 이야기 성취는 일일 기록의 90일 정리와 별도로 보존합니다.
+      const dates = value.unlockedDates.filter(date => {
+        if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today) return false;
+        const parsed = new Date(`${date}T00:00:00Z`);
+        return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
+      });
+      const unlockedDates = [...new Set(dates)].sort().slice(0, storyScenes.length);
+      const lastViewed = Number.isInteger(value.lastViewed) && value.lastViewed >= 0 && value.lastViewed <= unlockedDates.length ? value.lastViewed : 0;
+      return { unlockedDates, lastViewed };
+    }
+    function readStoryProgress() {
+      let stored;
+      try { stored = localStorage.getItem(storyStorageKey); }
+      catch { storyState.storageAvailable = false; return { unlockedDates: [], lastViewed: 0 }; }
+      if (!stored) return { unlockedDates: [], lastViewed: 0 };
+      try { return cleanStoryProgress(JSON.parse(stored)); }
+      catch { return { unlockedDates: [], lastViewed: 0 }; }
+    }
+    function saveStoryProgress() {
+      if (!storyState.storageAvailable) return;
+      const stored = readStoryProgress();
+      const merged = cleanStoryProgress({ version: 1, unlockedDates: [...stored.unlockedDates, ...storyState.unlockedDates], lastViewed: storyState.lastViewed });
+      Object.assign(storyState, merged);
+      if (!storyState.storageAvailable) return;
+      const serialized = JSON.stringify({ version: 1, ...merged });
+      try { if (localStorage.getItem(storyStorageKey) !== serialized) localStorage.setItem(storyStorageKey, serialized); }
+      catch { storyState.storageAvailable = false; }
+    }
+    function syncStoryRewards() {
+      const previousCount = storyState.unlockedDates.length;
+      const stored = storyState.storageAvailable ? readStoryProgress() : { unlockedDates: [], lastViewed: 0 };
+      const completedDates = Object.keys(dailyState.days).filter(date => dailyProgress(date) === 3);
+      Object.assign(storyState, cleanStoryProgress({ version: 1, unlockedDates: [...storyState.unlockedDates, ...stored.unlockedDates, ...completedDates], lastViewed: storyState.lastViewed || stored.lastViewed }));
+      saveStoryProgress();
+      return storyState.unlockedDates.length > previousCount;
+    }
+    function storyInviteContent() {
+      const count = storyState.unlockedDates.length;
+      const description = count === storyScenes.length ? '이야기 완결! 열린 15컷을 언제든 다시 읽어요.' : count ? '쉬어도 이어져요. 열린 이야기를 읽어 보세요.' : '오늘 미션 3개를 마치면 첫 이야기가 열려요.';
+      return `${guideSvg()}<div class="story-invite-copy"><h3>상자 친구의 여행</h3><p id="storyProgressText">열린 이야기 ${count}/15</p><small>${description}</small>${storyState.storageAvailable ? '' : '<small role="status">저장할 수 없어 이야기 진행은 현재 열기에서만 유지됩니다.</small>'}</div><button class="button" data-action="story-open"${count ? '' : ' disabled'}>${count ? '이야기 읽기' : '첫 컷 기다리기'} ${icon('arrow')}</button>`;
+    }
+    function refreshStoryWidgets() {
+      const panel = document.getElementById('storyPanel');
+      if (!panel) return;
+      const focused = panel.contains(document.activeElement);
+      const returnFocus = state.dialogReturnFocus && panel.contains(state.dialogReturnFocus);
+      panel.innerHTML = storyInviteContent();
+      if (returnFocus) state.dialogReturnFocus = panel.querySelector('[data-action="story-open"]');
+      if (focused) panel.querySelector('[data-action="story-open"]')?.focus({ preventScroll: true });
+    }
+    function refreshStoryReader() {
+      const reader = dialog.querySelector('.story-reader');
+      const count = storyState.unlockedDates.length;
+      if (!dialog.open || !reader || Number(reader.dataset.storyCount) === count) return;
+      if (!count) { dialog.close(); return; }
+      const focused = document.activeElement;
+      let selector = '#storySceneTitle';
+      if (dialog.contains(focused) && focused.dataset.action) {
+        selector = focused.dataset.action === 'story-select' ? `[data-story-index="${focused.dataset.storyIndex}"]` : `[data-action="${focused.dataset.action}"]`;
+      }
+      // 다른 탭의 해금만 반영할 때는 열람 위치를 재저장하지 않아 탭 사이 반복 갱신을 막습니다.
+      openStory(Math.min(storyState.viewIndex, count), selector, false);
+    }
+    function storyArt(index) {
+      const chapter = Math.floor((index - 1) / 5);
+      const sky = chapter === 1 ? '#e9f1f6' : '#eaf6f1';
+      const ground = chapter === 1 ? '#d1e4e9' : '#cde5d6';
+      const props = [
+        '<path d="m232 127 24-8 25 8 23-8v66l-23 8-25-8-24 8z" fill="#fff9e9" stroke="#976116" stroke-width="2"/><path d="m246 148 17 8 18-16 13 12" fill="none" stroke="#16816a" stroke-width="3" stroke-dasharray="4 4"/>',
+        '<path d="M0 208q70-40 142 0t178 0v32H0" fill="#add6df"/><path d="M202 186q48-46 98 0M203 198q47-44 97 0" fill="none" stroke="#976116" stroke-width="9"/><path d="M209 161v30m28-49v36m28-36v36m27-17v30" stroke="#976116" stroke-width="3"/>',
+        '<path d="M209 239q4-42 59-88M210 239q-2-42-21-54" fill="none" stroke="#fff9e9" stroke-width="13"/><path d="M243 92v78m-22-63h67l-12-13h-55z" fill="#fff9e9" stroke="#976116" stroke-width="3"/>',
+        '<path d="M264 153v63" stroke="#976116" stroke-width="8"/><path d="M234 118q0-25 29-25h29v66h-58z" fill="#16816a"/><path d="M244 131h35m-21-29v15" stroke="#eaf6f1" stroke-width="4"/>',
+        '<path d="m253 102 8 17 19 3-14 13 3 19-16-9-17 9 3-19-14-13 19-3z" fill="#e9c779" stroke="#976116" stroke-width="2"/><path d="M237 172h54v35h-54z m0 0 27 19 27-19" fill="#fff9e9" stroke="#976116" stroke-width="2"/>',
+        '<path d="m257 164 23-26 12 31-25 19z" fill="#94cbbb" stroke="#16816a" stroke-width="2"/><path d="m270 126 4-9m18 17 9-3m-59 14-8-4" stroke="#976116" stroke-width="3"/>',
+        '<path d="M177 205q34-26 62 0t81 0M181 221q33-25 63 0t76 0" fill="none" stroke="#77b3c3" stroke-width="3"/><path d="m222 185 14-5 7 8-16 7m43-22 15-4 8 9-16 6" fill="#fff9e9"/>',
+        '<path d="M181 228q28-94 139-60v72H181" fill="#b9d4b3"/><path d="M227 180v-20m5 20 8-16m-18 16-7-13M198 91h77m-91 18h49" stroke="#16816a" stroke-width="3" stroke-linecap="round"/>',
+        '<path d="m240 205 10-88h35l12 88z" fill="#fff9e9" stroke="#976116" stroke-width="2"/><path d="M243 117h49v-24h-49z" fill="#16816a"/><path d="m241 93 27-17 26 17" fill="#976116"/><path d="m250 105-43-23v46z" fill="#e9c779" opacity=".7"/><circle cx="268" cy="105" r="5" fill="#e9c779"/>',
+        '<path d="M188 193q40-16 68 0t64 0" fill="none" stroke="#77b3c3" stroke-width="3"/><path d="m239 159 59 0-12 19h-34z" fill="#16816a"/><path d="M269 159v-39l23 27h-23" fill="#fff9e9" stroke="#976116" stroke-width="2"/>',
+        '<path d="m233 141 20-7 20 7 23-7v62l-23 7-20-7-20 7z" fill="#fff9e9" stroke="#976116" stroke-width="2"/><path d="m245 165 16-10 15 16 12-9" fill="none" stroke="#16816a" stroke-width="3"/>',
+        '<path d="m216 178 82 0-19 33h-47z m0 0 48-34-14 34m14-34 34 34-48 0" fill="#fff9e9" stroke="#976116" stroke-width="2"/><circle cx="249" cy="188" r="2" fill="#203c37"/><circle cx="267" cy="188" r="2" fill="#203c37"/>',
+        '<path d="M258 194v-73" stroke="#976116" stroke-width="12"/><path d="M213 121q-15-34 17-45 10-45 42-19 43-17 42 29 30 20 3 42z" fill="#a9d2ba"/><path d="M215 210h80m-68 0v20m55-20v20" stroke="#976116" stroke-width="6"/>',
+        '<path d="m204 163 29-8 25 8v35l-25-8-29 8z" fill="#fff9e9" stroke="#976116" stroke-width="2"/><path d="m250 202 51 0-12 19h-28z" fill="#c5e1d5" stroke="#16816a" stroke-width="2"/>',
+        '<path d="M208 215q32-62 112-52" fill="none" stroke="#fff9e9" stroke-width="17"/><path d="m245 175 60 0-15 22h-28z" fill="#fff9e9" stroke="#976116" stroke-width="2"/><path d="m262 81 6 13 14 2-10 10 2 14-12-6-12 6 2-14-10-10 14-2z" fill="#e9c779"/>'
+      ];
+      return `<svg id="storySceneArt" viewBox="0 0 320 240" aria-hidden="true"><rect width="320" height="240" fill="${sky}"/><circle cx="66" cy="47" r="23" fill="#fff9e9"/><path d="M0 191q52-34 111-3t209-5v57H0" fill="${ground}"/>${props[index - 1]}<ellipse cx="115" cy="211" rx="56" ry="8" fill="#203c37" opacity=".09"/><g stroke="#203c37" stroke-width="2.5" stroke-linejoin="round"><path d="m64 129 51-24 52 24v56l-52 26-51-26z" fill="#dff3ea"/><path d="m64 129 51 25 52-25m-52 25v57m-26-94 51 26" fill="none"/><path d="m69 183-8 14m99-14 8 14" fill="none" stroke-linecap="round"/></g><circle cx="87" cy="162" r="3" fill="#203c37"/><circle cx="104" cy="170" r="3" fill="#203c37"/><path d="m86 178q7 10 15 6" fill="none" stroke="#203c37" stroke-width="2.5" stroke-linecap="round"/><path d="m76 91 20-10m40 8 13 5" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
+    }
+    function openStory(index = storyState.lastViewed || 1, focusSelector = '#storySceneTitle', remember = true) {
+      const count = storyState.unlockedDates.length;
+      if (!Number.isInteger(index) || index < 1 || index > count) return;
+      const returnFocus = dialog.open ? state.dialogReturnFocus : document.activeElement;
+      storyState.viewIndex = index;
+      if (remember) { storyState.lastViewed = index; saveStoryProgress(); }
+      const chapter = Math.floor((index - 1) / 5);
+      const body = `<div class="story-reader" data-story-count="${count}"><div class="story-scene">${storyArt(index)}<div class="story-scene-copy"><p class="story-chapter">${chapter + 1}편 · ${storyChapters[chapter]} · ${index}/15컷</p><h3 id="storySceneTitle" tabindex="-1">${storyScenes[index - 1][0]}</h3><p id="storySceneText">${storyScenes[index - 1][1]}</p><div class="story-navigation"><button class="button" data-action="story-prev"${index === 1 ? ' disabled' : ''}>이전 컷</button><button class="button" data-action="story-next"${index === count ? ' disabled' : ''}>다음 컷</button></div></div></div><p class="story-unlock-note">${count === storyScenes.length ? '15컷 완결 · 상자 친구의 여행을 언제든 다시 읽을 수 있어요.' : '하루 미션 3개를 완료하면 다음 한 컷이 열려요. 같은 날에는 한 번만 열립니다.'}</p><div class="story-episodes" aria-label="이야기 컷 선택">${storyChapters.map((title, episode) => `<section class="story-episode"><h4>${episode + 1}편 · ${title}</h4><div class="story-cuts">${Array.from({ length: 5 }, (_, cut) => { const number = episode * 5 + cut + 1; const locked = number > count; return `<button class="story-cut" data-action="story-select" data-story-index="${number}"${locked ? ' disabled' : ''}${number === index ? ' aria-current="step"' : ''} aria-label="${number}컷 ${storyScenes[number - 1][0]} · ${locked ? '잠김' : '열림'}">${number}컷<span>${locked ? '잠김' : '열림'}</span></button>`; }).join('')}</div></section>`).join('')}</div><p class="story-storage-note">상자 친구의 허구 이야기입니다. 실제 재고·주문·연결 상태를 나타내지 않습니다.${storyState.storageAvailable ? ' 이 브라우저에서 이어서 읽어요.' : ' 저장할 수 없어 현재 열기에서만 진행이 유지됩니다.'}</p></div>`;
+      showDialog('상자 친구의 여행', `연재 이야기 · 열린 ${count}/15컷`, body, returnFocus);
+      const focused = dialog.querySelector(focusSelector);
+      (focused && !focused.disabled ? focused : dialog.querySelector('#storySceneTitle')).focus({ preventScroll: true });
+      refreshStoryWidgets();
+    }
+
+    function currentDailyDate() {
+      const parts = dailyDateFormatter.formatToParts(new Date());
+      const value = type => parts.find(part => part.type === type).value;
+      return `${value('year')}-${value('month')}-${value('day')}`;
+    }
+    function dailyDateOffset(date, offset) {
+      const shifted = new Date(`${date}T00:00:00Z`);
+      shifted.setUTCDate(shifted.getUTCDate() + offset);
+      return shifted.toISOString().slice(0, 10);
+    }
+    function cleanDailyDays(value) {
+      if (!value || typeof value !== 'object' || value.version !== 1 || !value.days || typeof value.days !== 'object' || Array.isArray(value.days)) return {};
+      const today = currentDailyDate();
+      const earliest = dailyDateOffset(today, -89);
+      const days = {};
+      // 저장된 자료는 날짜·불리언만 허용하고 잘못된 날짜와 미래 기록은 제외합니다.
+      for (const date of Object.keys(value.days).sort()) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < earliest || date > today) continue;
+        const parsed = new Date(`${date}T00:00:00Z`);
+        if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) continue;
+        const record = value.days[date];
+        if (!record || typeof record !== 'object' || Array.isArray(record)) continue;
+        const inventoryChecked = record.inventory === true;
+        const ordersChecked = record.orders === true;
+        if (record.opened === true || inventoryChecked || ordersChecked) days[date] = { opened: true, inventory: inventoryChecked, orders: ordersChecked };
+      }
+      return days;
+    }
+    function readDailyDays() {
+      let stored;
+      try { stored = localStorage.getItem(dailyStorageKey); }
+      catch { dailyState.storageAvailable = false; return {}; }
+      if (!stored) return {};
+      try { return cleanDailyDays(JSON.parse(stored)); }
+      catch { return {}; }
+    }
+    function mergeDailyDays(first, second) {
+      const days = {};
+      for (const date of new Set([...Object.keys(first), ...Object.keys(second)])) {
+        days[date] = Object.fromEntries(dailyTasks.map(task => [task, first[date]?.[task] === true || second[date]?.[task] === true]));
+      }
+      return cleanDailyDays({ version: 1, days });
+    }
+    function saveDailyDays(mergeStored = true) {
+      if (!dailyState.storageAvailable) return;
+      if (mergeStored) dailyState.days = mergeDailyDays(readDailyDays(), dailyState.days);
+      if (!dailyState.storageAvailable) return;
+      try { localStorage.setItem(dailyStorageKey, JSON.stringify({ version: 1, days: dailyState.days })); }
+      catch { dailyState.storageAvailable = false; }
+    }
+    function dailyProgress(date = dailyState.date) {
+      return dailyTasks.filter(task => dailyState.days[date]?.[task] === true).length;
+    }
+    function recordDailyCheck(task, announce = false) {
+      dailyState.date = currentDailyDate();
+      const previous = dailyState.days[dailyState.date] || { opened: false, inventory: false, orders: false };
+      if (previous[task] && previous.opened) return;
+      dailyState.days[dailyState.date] = { ...previous, opened: true, [task]: true };
+      // 저장 직전에 다른 탭 기록을 합쳐 반복 확인과 병렬 방문의 중복을 막습니다.
+      saveDailyDays();
+      const storyUnlocked = syncStoryRewards();
+      if (announce) {
+        const title = task === 'inventory' ? '재고 확인' : '주문 여부 확인';
+        notify(dailyProgress() === 3 ? `오늘의 샘플 확인 미션 3개를 모두 완료했습니다. ${storyUnlocked ? '상자 친구의 다음 이야기가 열렸어요. 대시보드에서 읽어 보세요.' : '완료 도장을 찍었어요.'}` : `${title}을 오늘 미션에 기록했습니다. ${dailyProgress()}/3 완료`);
+      }
+    }
+    function dailyTaskRow(task, iconName, title, description, view) {
+      const complete = dailyState.days[dailyState.date]?.[task] === true;
+      return `<div class="task-row daily-task ${complete ? 'complete' : ''}" data-daily-task="${task}"><span class="task-icon">${icon(complete ? 'check' : iconName)}</span><div><div class="mission-title"><h3>${title}</h3><span class="daily-task-state">${complete ? '완료' : '확인 전'}</span></div><p>${description}</p></div>${view ? `<button class="text-button" data-view="${view}">${complete ? '다시 보기' : '확인하러 가기'} ${icon('arrow')}</button>` : '<span class="pill sample">자동 기록</span>'}</div>`;
+    }
+    function dailyMissionContent() {
+      const progress = dailyProgress();
+      const stamps = Array.from({ length: 7 }, (_, index) => dailyDateOffset(dailyState.date, index - 6));
+      const completedDays = stamps.filter(date => dailyProgress(date) === 3).length;
+      return `<div class="review-intro">${guideSvg()}<div><h2>오늘의 확인 미션 <span class="pill sample">샘플</span></h2><p>페이지를 열고, 재고와 주문 화면을 보면 완료돼요.</p><time class="daily-date" datetime="${dailyState.date}">${dailyState.date.replaceAll('-', '.')} · 한국 시간</time></div></div><div class="review-progress"><div class="progress-label"><strong id="dailyProgressText">오늘 진행 ${progress}/3</strong><span>${dailyState.storageAvailable ? '이 브라우저에 기록' : '현재 열기에서만 유지'}</span></div><progress id="dailyProgress" max="3" value="${progress}" aria-label="오늘의 샘플 확인 미션 ${progress} / 3">${progress}/3</progress><p role="status" id="dailyStatusText">${progress === 3 ? '오늘 확인을 마쳤어요. 완료 도장을 찍었습니다.' : '남은 화면을 확인하면 오늘 미션이 완료됩니다.'}</p></div>
+        ${dailyTaskRow('opened', 'store', '오늘 페이지 열기', '하루에 한 번, 페이지를 열면 자동 완료', '')}
+        ${dailyTaskRow('inventory', 'box', '재고 확인하기', '통합 재고 화면의 수량과 조회 상태를 살펴보세요.', 'inventory')}
+        ${dailyTaskRow('orders', 'orders', '주문 여부 확인하기', '통합 주문 화면의 주문 목록과 조회 범위를 살펴보세요.', 'orders')}
+        <div class="daily-history"><div class="daily-history-heading"><strong>최근 7일의 완료 도장</strong><span>${completedDays}일 완료 · 쉬어도 기록은 유지돼요</span></div><ol class="daily-stamps" aria-label="최근 7일의 샘플 확인 미션 기록">${stamps.map(date => { const count = dailyProgress(date); const label = count === 3 ? '완료' : count ? `${count}/3` : '기록 없음'; return `<li class="daily-stamp ${count === 3 ? 'done' : ''} ${date === dailyState.date ? 'today' : ''}" data-daily-date="${date}" aria-label="${date} ${label}" title="${date} ${label}"><time datetime="${date}">${date.slice(5).replace('-', '/')}</time>${icon(count === 3 ? 'check' : 'box')}<span aria-hidden="true">${count ? label : '—'}</span></li>`; }).join('')}</ol><p class="daily-history-note">샘플 화면 방문 기록입니다. 미션을 완료해도 실제 재고·조회 오류·연결 상태는 바뀌지 않습니다.${dailyState.storageAvailable ? '' : ' 브라우저에 저장할 수 없어, 닫거나 새로고침하면 기록이 사라집니다.'}</p></div>`;
+    }
+    function dailyViewNote(view) {
+      return `<div class="daily-view-note" data-daily-view-note><p role="status" data-daily-view-status>${view === 'inventory' ? '재고 확인' : '주문 여부 확인'} · 오늘의 샘플 미션 ${dailyProgress()}/3</p><button class="text-button" data-view="dashboard">오늘 미션 보기 ${icon('arrow')}</button></div>`;
+    }
+    function refreshDailyWidgets() {
+      const panel = document.getElementById('dailyMissionPanel');
+      if (panel) {
+        const focusedView = panel.contains(document.activeElement) ? document.activeElement.dataset.view : null;
+        panel.innerHTML = dailyMissionContent();
+        if (focusedView) panel.querySelector(`[data-view="${focusedView}"]`)?.focus({ preventScroll: true });
+      }
+      const note = main.querySelector('[data-daily-view-status]');
+      if (note) note.textContent = `${state.view === 'inventory' ? '재고 확인' : '주문 여부 확인'} · 오늘의 샘플 미션 ${dailyProgress()}/3${dailyState.storageAvailable ? ' · 이 브라우저에 기록됨' : ' · 현재 열기에서만 유지'}`;
+      refreshStoryWidgets();
+      refreshStoryReader();
+    }
+    function resetDailyChecks() {
+      dailyState.date = currentDailyDate();
+      dailyState.days = { [dailyState.date]: { opened: true, inventory: false, orders: false } };
+      try { localStorage.removeItem(dailyStorageKey); }
+      catch { dailyState.storageAvailable = false; }
+      saveDailyDays(false);
+      render();
+      notify('일일 확인 기록을 지웠습니다. 오늘 페이지 열기부터 다시 시작합니다.');
+    }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character])); }
+    function icon(name) { return `<svg class="icon" aria-hidden="true"><use href="#icon-${name}"/></svg>`; }
+    function channelLabel(item) { return item.channel === 'naver' ? '스마트스토어' : '쿠팡'; }
+    function channelBadge(item) { return `<span class="channel ${item.channel}">${channelLabel(item)}</span>`; }
+    function fulfillmentLabel(item) { return item.fulfillment === 'rocket' ? '로켓그로스' : '판매자배송'; }
+    function accountLabel(item) { return item.channel === 'naver' ? '스토어 A (샘플)' : '판매자 A (샘플)'; }
+    function quantityMeaning(item) { return item.fulfillment === 'rocket' ? '주문가능 재고' : '채널 등록 재고'; }
+    function quantityClass(item) { return item.quantity === null ? 'none' : item.quantity === 0 ? 'zero' : item.quantity <= state.threshold ? 'low' : ''; }
+    function quantity(item) { return item.quantity === null ? '—' : item.quantity.toLocaleString('ko-KR'); }
+    function badge(item) { return `<span class="pill state-${item.state}">${stateLabels[item.state]}</span>`; }
+    function missionProgress() { return Number(state.missions.stock) + Number(state.missions.sync) + Number(mappings.every(mapping => inventory.find(item => item.id === mapping.id)?.sku)); }
+    function missionState(id) { return id === 'mapping' ? (mappings.every(mapping => inventory.find(item => item.id === mapping.id)?.sku) ? '완료' : `${mappings.filter(mapping => inventory.find(item => item.id === mapping.id)?.sku).length}/3 연결`) : (state.missions[id] ? '검토 기록됨' : '검토 전'); }
+    function guideSvg() { return '<svg class="box-guide" viewBox="0 0 72 72" role="img" aria-label="샘플 검토 안내 상자"><path d="M12 25 36 14l24 11v27L36 64 12 52z" fill="#dff3ea" stroke="#21352f" stroke-width="2"/><path d="m12 25 24 12 24-12M36 37v27M24 20l24 12" fill="none" stroke="#21352f" stroke-width="2"/><circle cx="29" cy="45" r="2" fill="#21352f"/><circle cx="43" cy="45" r="2" fill="#21352f"/><path d="M31 51c3 2 7 2 10 0" fill="none" stroke="#21352f" stroke-width="2" stroke-linecap="round"/></svg>'; }
+    function achievementBadge(id, label, earned) { const text = earned ? `${label} · 획득` : `${label} · 미획득`; return `<span class="achievement-badge ${earned ? 'earned' : ''}" data-badge="${id}" aria-label="${text}">${icon(earned ? 'check' : 'lock')}<span>${text}</span></span>`; }
+    function missionRow(id, iconName, title, description, actionLabel) { const complete = id === 'mapping' ? mappings.every(mapping => inventory.find(item => item.id === mapping.id)?.sku) : state.missions[id]; return `<div class="task-row ${complete ? 'mission-complete' : ''}"><span class="task-icon ${id === 'mapping' ? 'blue' : ''}">${icon(iconName)}</span><div><div class="mission-title"><h3>${title}</h3><span class="mission-state ${complete ? 'complete' : ''}">${missionState(id)}</span></div><p>${description}</p></div><button class="text-button" data-action="mission-open" data-id="${id}">${actionLabel} ${icon('arrow')}</button></div>`; }
+    function heading(view) { return `<div class="page-heading"><div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><div class="reference-time">샘플 시나리오 기준<strong>2026.10.04　09:40</strong></div></div>`; }
+    function footer() { return `<p class="footer-note">${icon('info')}모든 상품·주문·시각은 가상 예시입니다. 실제 운영 통계와 알림에는 포함되지 않습니다.</p>`; }
+    function selectField(id, label, values, selected, extra = '') { return `<div class="field"><label for="${id}">${label}</label><select id="${id}" ${extra}>${values.map(([value, text]) => `<option value="${value}"${value === selected ? ' selected' : ''}>${text}</option>`).join('')}</select></div>`; }
+    function searchField(id, selected, placeholder) { return `<div class="field search-field"><label for="${id}">검색</label><div class="search-input">${icon('search')}<input id="${id}" type="search" value="${escapeHtml(selected)}" placeholder="${placeholder}" autocomplete="off"></div></div>`; }
+    function go(view, focus = true) {
+      state.view = view;
+      document.querySelectorAll('.nav button').forEach(button => { if (button.dataset.view === view) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current'); });
+      render();
+      // 모바일 메뉴는 페이지 전체가 아닌 메뉴 영역 안에서만 이동합니다.
+      if (window.matchMedia('(max-width: 960px)').matches) {
+        const nav = document.querySelector('.nav');
+        const selected = nav.querySelector('[aria-current="page"]');
+        const navBounds = nav.getBoundingClientRect();
+        const selectedBounds = selected.getBoundingClientRect();
+        if (selectedBounds.left < navBounds.left) nav.scrollLeft -= navBounds.left - selectedBounds.left;
+        else if (selectedBounds.right > navBounds.right) nav.scrollLeft += selectedBounds.right - navBounds.right;
+      }
+      if (focus) { main.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'auto' }); }
+    }
+    function addTableHints(container) {
+      container.querySelectorAll('.table-wrap').forEach(wrapper => {
+        if (wrapper.previousElementSibling?.classList.contains('scroll-hint')) return;
+        const hint = document.createElement('p');
+        hint.className = 'scroll-hint';
+        hint.textContent = '표를 좌우로 움직여 확인하세요.';
+        wrapper.before(hint);
+      });
+    }
+    function render() {
+      const practice = document.getElementById('samplePractice');
+      if (practice) state.practiceOpen = practice.open;
+      const storyReturnFocus = dialog.open && dialog.querySelector('.story-reader') && main.contains(state.dialogReturnFocus);
+      recordDailyCheck('opened');
+      syncStoryRewards();
+      const views = { dashboard: dashboardView, inventory: inventoryView, orders: ordersView, mapping: mappingView, alerts: alertsView, connections: connectionsView };
+      main.innerHTML = heading(state.view) + views[state.view]() + footer();
+      if (storyReturnFocus) state.dialogReturnFocus = main.querySelector('[data-action="story-open"]') || main;
+      document.getElementById('mappingCount').textContent = mappings.filter(mapping => !inventory.find(item => item.id === mapping.id).sku).length;
+      document.getElementById('alertCount').textContent = alerts.filter(alert => !alert.acknowledged).length;
+      if (state.view === 'inventory') renderInventoryResults();
+      if (state.view === 'orders') renderOrderResults();
+      // 샘플 목록이 표시된 화면을 실제로 열었을 때 해당 확인을 기록합니다.
+      if (document.visibilityState === 'visible' && state.view === 'inventory' && main.querySelector('#inventoryResults .result-summary')) recordDailyCheck('inventory', true);
+      if (document.visibilityState === 'visible' && state.view === 'orders' && main.querySelector('#orderResults .result-summary')) recordDailyCheck('orders', true);
+      refreshDailyWidgets();
+      addTableHints(main);
+      if (state.view === 'connections') {
+        const settings = main.querySelector('.panel-body');
+        if (settings) settings.insertAdjacentHTML('beforeend', `<div class="setting-row"><div><h3>일일 확인 기록 삭제</h3><p>이 브라우저의 완료 날짜와 방문 기록을 지웁니다. 오늘 페이지 열기부터 다시 시작합니다.</p></div><button class="button small daily-reset-button" data-action="daily-reset">일일 기록 삭제</button></div><div class="setting-row"><div><h3>샘플 화면 효과</h3><p>짧은 확인 전환을 표시합니다. 시스템의 움직임 줄이기 설정도 존중합니다.</p></div><label class="motion-setting"><input type="checkbox" id="motionToggle" ${state.effects ? 'checked' : ''}>효과 사용</label></div>`);
+      }
+      document.body.dataset.effects = state.effects ? 'on' : 'off';
+    }
+    function dashboardView() {
+      const comparisons = ['BAG-NT-S', 'MUG-IV-320', 'BOX-GR-M', 'TAPE-IV-01'];
+      const progress = missionProgress();
+      return `<div class="dashboard-top"><section class="panel mission-panel"><div id="dailyMissionPanel">${dailyMissionContent()}</div><div id="storyPanel" class="story-invite">${storyInviteContent()}</div><details id="samplePractice" class="sample-practice"${state.practiceOpen ? ' open' : ''}><summary>추가 샘플 연습 <span>기존 사례·연결 체험</span></summary><div class="practice-body"><div class="review-intro"><div><h2>샘플 사례 연습</h2><p>기존 검토·연결 체험입니다. 오늘의 확인 미션과 별도로 진행됩니다.</p></div></div><div class="review-progress"><div class="progress-label"><strong id="reviewProgressText">검토 진행 ${progress}/3</strong><span>샘플 화면에서만 유지</span></div><progress id="reviewProgress" max="3" value="${progress}" aria-label="샘플 검토 진행 ${progress} / 3">${progress}/3</progress><p>${progress === 3 ? '샘플 미션을 모두 확인했어요. 실제 재고·조회 상태는 그대로예요.' : progress ? '진행을 기록했어요. 남은 사례도 확인해 보세요.' : '샘플 사례부터 하나씩 확인해 볼까요.'}</p></div>
+        ${missionRow('stock','box','부족·품절 사례를 검토합니다','로켓그로스 주문가능 재고 4개와 스마트스토어 정상 조회 0개를 비교해 보세요.','사례 보기')}
+        ${missionRow('sync','warning','조회 상태 사례를 검토합니다','마지막 성공값 7개를 유지한 경우와 첫 조회 실패의 수량 —를 구분해 보세요.','사례 보기')}
+        ${missionRow('mapping','link','옵션 3개 연결을 체험합니다',`${mappings.filter(mapping => inventory.find(item => item.id === mapping.id)?.sku).length}/3개 샘플 연결 · 후보를 직접 확인한 뒤 승인합니다.`,'후보 보기')}
+        <div class="badge-line"><span class="badge-caption">샘플 성취 · 당시 수행 기록이며 실제 운영 상태를 뜻하지 않습니다.</span>${achievementBadge('first-link','첫 연결 체험',state.badges.firstLink)}${achievementBadge('review-round','한 바퀴 검토',state.badges.reviewRound)}</div></div></details></section>
+        <section class="panel"><div class="panel-heading"><h2>실제 연결 상태</h2><button class="text-button" data-view="connections">연결 안내 ${icon('arrow')}</button></div>
+        <div class="connection-row"><div class="first-line"><span class="channel naver">스마트스토어</span><span class="pill sample">미연결</span></div><p>키·권한·호출 IP와 실제 조회 검증 대기</p></div>
+        <div class="connection-row"><div class="first-line"><span class="channel coupang">쿠팡 판매자배송</span><span class="pill sample">미연결</span></div><p>상품·재고·주문 조회 검증 대기</p></div>
+        <div class="connection-row"><div class="first-line"><span class="channel coupang">쿠팡 로켓그로스</span><span class="pill sample">미연결</span></div><p>조회 권한과 주문·클레임 범위 확인 대기</p></div><div class="neutral-note">샘플 조회 사례는 아래 표에만 표시합니다.</div></section></div>
+        <section class="panel"><div class="panel-heading"><div><h2>SKU별 채널 재고 비교</h2><p>같은 판매 옵션을 채널별로 나란히 봅니다. 수량은 합산하지 않습니다.</p></div><button class="text-button" data-view="inventory">전체 재고 보기 ${icon('arrow')}</button></div><div class="result-summary"><strong>내부 SKU 4개 예시</strong><span class="pill sample">샘플 데이터</span></div>
+        <div class="table-wrap" tabindex="0" aria-label="SKU별 채널 재고 비교표. 좁은 화면에서는 가로로 스크롤하세요."><table class="comparison-table"><thead><tr><th>상품 / 내부 SKU</th><th class="right">스마트스토어<span>채널 등록 재고</span></th><th class="right">쿠팡 판매자배송<span>채널 등록 재고</span></th><th class="right">쿠팡 로켓그로스<span>주문가능 재고</span></th></tr></thead><tbody>${comparisons.map(sku => { const grouped = inventory.filter(item => item.sku === sku); const first = grouped[0]; return `<tr><td><button class="product-button" data-action="inventory-detail" data-id="${first.id}">${first.name}</button><span class="secondary">${first.option}</span><span class="sku">${sku} · 샘플</span></td>${[['naver','seller'],['coupang','seller'],['coupang','rocket']].map(([channel, fulfillment]) => { const item = grouped.find(row => row.channel === channel && row.fulfillment === fulfillment); return item ? `<td class="right amount-cell"><button class="product-button number ${quantityClass(item)}" data-action="inventory-detail" data-id="${item.id}" aria-label="${first.name} ${channelLabel(item)} ${fulfillmentLabel(item)} 상세">${quantity(item)}</button><br>${badge(item)}<span class="secondary">${item.lastSuccess ? `예시 확인 ${item.lastSuccess}` : '이전 성공 없음'}</span></td>` : '<td class="right"><span class="number none">—</span><span class="secondary">연결된 옵션 없음</span></td>'; }).join('')}</tr>`; }).join('')}</tbody></table></div><div class="table-footnote">미연결 옵션은 비교표에 합치지 않습니다. 채널 등록 재고와 주문가능 재고는 실제 창고 보유량과 다릅니다.</div></section>`;
+    }
+    function inventoryView() {
+      const filters = state.inventoryFilters;
+      return dailyViewNote('inventory') + `<div class="notice">${icon('info')}<p><strong>수량의 의미를 따로 봅니다.</strong> 스마트스토어·쿠팡 판매자배송은 채널 등록 재고, 로켓그로스는 주문가능 재고입니다. 채널 수량을 합산하지 않습니다.</p></div><section class="panel"><div class="toolbar">${searchField('inventorySearch',filters.search,'상품명, 옵션, 내부 SKU 검색')}${selectField('inventoryChannel','쇼핑몰',[['','전체 쇼핑몰'],['naver','스마트스토어'],['coupang','쿠팡']],filters.channel)}${selectField('inventoryFulfillment','배송 방식',[['','전체 배송 방식'],['seller','판매자배송'],['rocket','로켓그로스']],filters.fulfillment)}${selectField('inventoryStatus','조회·재고 상태',[['','전체 상태'],['attention','부족·품절'],['errors','조회 실패·지연'],['normal','정상 예시'],['low','부족 예시'],['zero','품절'],['stale','확인 지연'],['failed','조회 실패'],['unsupported','미지원 예시'],['unmanaged','관리 미사용'],['unverified','지원 미확인']],filters.status)}<button class="button" data-action="inventory-reset">초기화</button></div><div id="inventoryResults"></div></section>`;
+    }
+    function renderInventoryResults() {
+      const filters = state.inventoryFilters;
+      const rows = inventory.filter(item => `${item.name} ${item.option} ${item.sku || ''}`.toLowerCase().includes(filters.search.toLowerCase()) && (!filters.channel || item.channel === filters.channel) && (!filters.fulfillment || item.fulfillment === filters.fulfillment) && (!filters.status || item.state === filters.status || (filters.status === 'attention' && ['low','zero'].includes(item.state)) || (filters.status === 'errors' && ['failed','stale'].includes(item.state))));
+      document.getElementById('inventoryResults').innerHTML = `<div class="result-summary" role="status"><strong>샘플 옵션 ${rows.length}개 / 전체 ${inventory.length}개</strong><span class="secondary-hint">행을 선택하면 출처·최근 시도·상세 설명을 볼 수 있습니다.</span></div>${rows.length ? `<div class="table-wrap" tabindex="0" aria-label="통합 재고표. 좁은 화면에서는 가로로 스크롤하세요."><table class="inventory-table"><thead><tr><th>상품 / 옵션 / 내부 SKU</th><th>쇼핑몰 / 계정</th><th>배송 방식 / 수량 의미</th><th class="right">수량</th><th>조회·재고 상태</th><th>마지막 성공 / 최근 시도</th><th></th></tr></thead><tbody>${rows.map(item => `<tr><td><button class="product-button" data-action="inventory-detail" data-id="${item.id}">${item.name}</button><span class="secondary">${item.option}</span><span class="sku">${item.sku || '내부 SKU 미연결'} · 샘플</span></td><td>${channelBadge(item)}<span class="secondary">${accountLabel(item)}</span></td><td>${fulfillmentLabel(item)}<span class="secondary">${quantityMeaning(item)}</span></td><td class="number ${quantityClass(item)}">${quantity(item)}</td><td>${badge(item)}${item.state === 'stale' ? '<span class="secondary">이전 수량 유지 · 최근 조회 실패</span>' : item.state === 'failed' ? '<span class="secondary">이전 성공값 없음</span>' : ''}</td><td class="timestamp">${item.lastSuccess ? `예시 성공 ${item.lastSuccess}` : '성공 이력 없음'}<span class="secondary">예시 시도 ${item.lastAttempt}</span></td><td><button class="text-button" data-action="inventory-detail" data-id="${item.id}" aria-label="${item.name} ${channelLabel(item)} ${fulfillmentLabel(item)} 상세 보기">상세</button></td></tr>`).join('')}</tbody></table></div><div class="table-footnote">정상 조회 0은 품절입니다. 오류·미지원·관리 미사용·미확인의 수량은 0으로 바꾸지 않습니다. 시각은 모두 2026.10.04의 가상 예시입니다.</div>` : emptyResult('inventory-reset')}`;
+      addTableHints(document.getElementById('inventoryResults'));
+    }
+    function ordersView() {
+      const filters = state.orderFilters;
+      return dailyViewNote('orders') + `<div class="notice warning">${icon('info')}<p><strong>로켓그로스는 출고 이후 조회되는 주문만 표시합니다.</strong> 결제 직후 주문 전체를 나타내지 않으며, 주문 상태 변경과 취소·반품·교환 지원은 미확인입니다.</p></div><section class="panel"><div class="toolbar">${searchField('orderSearch',filters.search,'주문 ID, 상품, 내부 SKU 검색')}${selectField('orderChannel','쇼핑몰',[['','전체 쇼핑몰'],['naver','스마트스토어'],['coupang','쿠팡']],filters.channel)}${selectField('orderFulfillment','배송 방식',[['','전체 배송 방식'],['seller','판매자배송'],['rocket','로켓그로스']],filters.fulfillment)}${selectField('orderStatus','상태 / 클레임',[['','전체 상태'],['paid','결제 완료'],['shipping','배송 중'],['claim','클레임 있음'],['limited','RG 상태 미확인']],filters.status)}<div class="field"><label for="orderFrom">예시 시작일</label><input type="date" id="orderFrom" value="${filters.from}"></div><div class="field"><label for="orderTo">예시 종료일</label><input type="date" id="orderTo" value="${filters.to}"></div><button class="button" data-action="order-reset">초기화</button></div><div id="orderResults"></div></section>`;
+    }
+    function renderOrderResults() {
+      const filters = state.orderFilters;
+      if (filters.from && filters.to && filters.from > filters.to) { document.getElementById('orderResults').innerHTML = '<div class="empty" role="status"><h3>날짜 범위를 확인해 주세요</h3><p>시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.</p></div>'; return; }
+      const rows = orders.filter(order => `${order.id} ${order.name} ${order.option} ${order.sku}`.toLowerCase().includes(filters.search.toLowerCase()) && (!filters.channel || order.channel === filters.channel) && (!filters.fulfillment || order.fulfillment === filters.fulfillment) && (!filters.status || order.state === filters.status) && (!filters.from || order.date >= filters.from) && (!filters.to || order.date <= filters.to));
+      document.getElementById('orderResults').innerHTML = `<div class="result-summary" role="status"><strong>샘플 주문 행 ${rows.length}개 / 전체 ${orders.length}개</strong><span class="secondary-hint">변경 조회 건수나 실제 신규 주문 통계가 아닙니다.</span></div>${rows.length ? `<div class="table-wrap" tabindex="0" aria-label="통합 주문표. 좁은 화면에서는 가로로 스크롤하세요."><table class="orders-table"><thead><tr><th>주문 행 / 예시 결제 시각</th><th>상품 / 옵션</th><th>쇼핑몰 / 배송 방식</th><th class="right">주문 수량</th><th>조회한 상태</th><th>클레임</th><th></th></tr></thead><tbody>${rows.map(order => `<tr><td><button class="product-button" data-action="order-detail" data-id="${order.id}">${order.id}</button><span class="secondary timestamp">${order.date} ${order.time} · 샘플</span></td><td>${order.name}<span class="secondary">${order.option}</span><span class="sku">${order.sku}</span></td><td>${channelBadge(order)}<span class="secondary">${fulfillmentLabel(order)}</span></td><td class="number">${order.quantity}</td><td><span class="pill ${order.state === 'limited' ? 'state-unverified' : 'sample'}">${order.label}</span><span class="secondary">${order.fulfillment === 'rocket' ? '출고 이후 조회 범위' : `원본: ${order.original}`}</span></td><td>${order.claim}${order.claimQuantity ? `<span class="secondary">주문 ${order.quantity}개 중 ${order.claimQuantity}개</span>` : ''}</td><td><button class="text-button" data-action="order-detail" data-id="${order.id}" aria-label="주문 ${order.id} 상세 보기">상세</button></td></tr>`).join('')}</tbody></table></div><div class="table-footnote">고객 이름·전화번호·주소가 없는 가상 주문입니다. 로켓그로스 판매수량(salesQuantity)은 주문 수량이며 재고가 아닙니다.</div>` : emptyResult('order-reset')}`;
+      addTableHints(document.getElementById('orderResults'));
+    }
+    function emptyResult(action) { return `<div class="empty" role="status"><h3>조건에 맞는 샘플이 없습니다</h3><p>검색어나 필터를 바꿔 보세요. 이 결과는 API 조회 실패가 아닙니다.</p><button class="button small" data-action="${action}">필터 초기화</button></div>`; }
+    function mappingView() {
+      return `<div class="notice">${icon('info')}<p><strong>샘플 내부 연결만 시연합니다.</strong> 이름이 같아도 자동 확정하지 않습니다. 계정·원본 옵션 ID와 판매 옵션을 확인한 뒤 후보를 연결하세요. 변경은 새로고침하면 초기화됩니다.</p></div><section class="panel"><div class="panel-heading"><div><h2>옵션 연결 후보</h2><p>쇼핑몰의 상품과 재고에는 영향을 주지 않습니다.</p></div><span class="pill sample">샘플 ${mappings.length}개</span></div><div class="table-wrap" tabindex="0" aria-label="상품 연결 후보표. 좁은 화면에서는 가로로 스크롤하세요."><table class="mapping-table"><thead><tr><th>채널 상품 / 옵션</th><th>채널 / 계정 / 원본 옵션 ID</th><th>내부 SKU 후보</th><th>연결 상태</th><th>샘플 동작</th></tr></thead><tbody>${mappings.map(mapping => { const item = inventory.find(row => row.id === mapping.id); return `<tr><td>${item.name}<span class="secondary">${item.option} · 샘플</span></td><td>${channelBadge(item)}<span class="secondary">${accountLabel(item)} / ${fulfillmentLabel(item)}</span><span class="sku">${item.externalId}</span></td><td>${item.sku ? `<strong class="sku">${item.sku}</strong>` : `<select class="candidate-select" data-mapping-id="${item.id}" aria-label="${item.name} ${item.option} 내부 SKU 후보 선택">${mapping.candidates.map(candidate => `<option${candidate === mapping.chosen ? ' selected' : ''}>${candidate}</option>`).join('')}</select>`}</td><td><span class="pill ${item.sku ? 'state-normal' : 'state-low'}">${item.sku ? '샘플 연결됨' : '직접 확인 필요'}</span>${item.state === 'unverified' ? '<span class="secondary">옵션 ID 실계정 검증 대기</span>' : ''}</td><td><button class="button small ${item.sku ? '' : 'primary'}" data-action="${item.sku ? 'mapping-release' : 'mapping-approve'}" data-id="${item.id}">${item.sku ? '샘플 연결 해제' : '샘플 연결 승인'}</button></td></tr>`; }).join('')}</tbody></table></div></section><section class="panel section-gap"><div class="panel-heading"><h2>샘플 변경 이력</h2><span class="pill sample">현재 화면에서만 유지</span></div><ul class="history-list">${state.history.length ? state.history.map(entry => `<li><span>${entry.time}</span>${escapeHtml(entry.text)}</li>`).join('') : '<li>아직 변경한 연결이 없습니다. 위 후보에서 샘플 연결을 시도해 보세요.</li>'}</ul></section>`;
+    }
+    function alertsView() {
+      const rows = alerts.filter(alert => state.alertFilter === 'all' || !alert.acknowledged);
+      return `<div class="notice">${icon('info')}<p><strong>미리 만든 알림 예시입니다.</strong> 샘플은 실제 운영 경보를 생성하지 않습니다. ‘예시 확인’은 이 화면의 표시만 바꾸며, 부족 수량이나 조회 오류를 해결한 것으로 처리하지 않습니다.</p></div><section class="panel"><div class="alert-tabs" aria-label="알림 예시 필터"><button data-action="alert-filter" data-filter="open" aria-pressed="${state.alertFilter === 'open'}">미확인 예시 ${alerts.filter(alert => !alert.acknowledged).length}</button><button data-action="alert-filter" data-filter="all" aria-pressed="${state.alertFilter === 'all'}">전체 이력 ${alerts.length}</button></div>${rows.length ? rows.map(alert => `<article class="alert-item ${alert.acknowledged ? 'acknowledged' : ''}"><span class="task-icon ${alert.type === 'mapping' ? 'blue' : ''}">${icon(alert.type === 'stock' ? 'box' : alert.type === 'sync' ? 'warning' : 'link')}</span><div><span class="pill ${alert.type === 'sync' ? 'state-stale' : alert.type === 'stock' ? 'state-low' : 'sample'}">${alert.type === 'stock' ? '재고 부족 예시' : alert.type === 'sync' ? '조회 오류 예시' : '상품 연결 예시'}</span><span class="pill sample">샘플</span><h3>${alert.title}</h3><p>${alert.description}</p><span class="secondary">예시 발생 2026.10.04 ${alert.time} · ${alert.acknowledged ? '화면에서 확인함' : '아직 확인하지 않음'}</span><button class="text-button" data-action="alert-detail" data-id="${alert.id}">관련 사례 보기 ${icon('arrow')}</button></div>${alert.acknowledged ? '<span class="pill sample">확인함</span>' : `<button class="button small" data-action="alert-acknowledge" data-id="${alert.id}">예시 확인</button>`}</article>`).join('') : '<div class="empty"><h3>모든 알림 예시를 확인했습니다</h3><p>전체 이력에서 확인한 예시를 다시 볼 수 있습니다.</p><button class="button small" data-action="alert-filter" data-filter="all">전체 이력 보기</button></div>'}</section>`;
+    }
+    function connectionsView() {
+      return `<div class="notice">${icon('info')}<p><strong>실제 계정은 모두 미연결입니다.</strong> 이 시안에서는 키를 입력받거나 인증을 요청하지 않습니다. 연결은 서버에서 준비하고 계정별 조회 결과를 검증한 뒤 완료로 표시합니다.</p></div><div class="connection-grid">${['naver','coupang'].map(channel => connectionPanel(channel)).join('')}</div><section class="panel section-gap"><div class="panel-heading"><div><h2>내부 설정 예시</h2><p>현재 화면에서만 바뀌며 새로고침하면 초기화됩니다.</p></div><span class="pill sample">샘플 설정</span></div><div class="panel-body"><div class="setting-row" style="margin-top:0;padding-top:0;border-top:0"><div><h3>부족 재고 예시 기준</h3><p>표의 숫자 강조 기준만 바뀝니다. 실제 경보나 쇼핑몰 재고를 변경하지 않습니다.</p></div><div class="threshold-field"><label for="thresholdInput" class="secondary">수량 기준 (개)</label><input type="number" min="0" max="999" id="thresholdInput" value="${state.threshold}"></div></div><div class="setting-row"><div><h3>샘플 화면 초기화</h3><p>상품 연결·알림 확인·수량 기준을 처음 상태로 되돌립니다.</p></div><button class="button small" data-action="sample-reset">샘플 초기화</button></div></div></section>`;
+    }
+    function connectionPanel(channel) {
+      const naver = channel === 'naver';
+      return `<section class="panel"><div class="status-block"><div><span class="channel ${channel}">${naver ? '네이버 스마트스토어' : '쿠팡'}</span><p>${naver ? '스토어 A는 가상 계정명입니다.' : '판매자배송·로켓그로스 조회를 구분합니다.'}</p></div><span class="status-dot">실제 미연결</span></div><div class="panel-body"><dl class="key-value"><dt>키·조회 권한</dt><dd>미등록 · 실제 계정 확인 대기</dd><dt>등록 발신 IP</dt><dd>설정 전</dd><dt>실제 마지막 성공</dt><dd>없음</dd><dt>실제 최근 시도</dt><dd>없음 · 시안은 외부 호출하지 않음</dd></dl><ol class="steps"><li><strong>계정과 권한 준비</strong><span>${naver ? '앱 활성 상태·상품/주문 API 그룹·호출 IPv4를 확인합니다.' : 'WING API 키·등록 IP·판매자배송/RG 권한을 확인합니다.'}</span></li><li><strong>서버에서 인증</strong><span>${naver ? 'OAuth2 토큰을 서버에서 발급받습니다.' : '서버에서 HMAC 서명을 만들어 요청합니다.'}</span></li><li><strong>상품·옵션·재고·주문 조회</strong><span>지원되는 범위와 수량 의미를 구분해 가져옵니다.</span></li><li><strong>판매자센터와 대조</strong><span>전체 페이지와 실제 조회 사례를 검증한 뒤 연결 완료로 기록합니다.</span></li></ol><div class="links">${naver ? '<a href="https://apicenter.commerce.naver.com/docs/auth" target="_blank" rel="noopener noreferrer">공식 인증 안내</a><a href="https://apicenter.commerce.naver.com/docs/restriction" target="_blank" rel="noopener noreferrer">공식 권한·제약 안내</a>' : '<a href="https://developers.coupang.com/ko/getting-started/issue-open-api-keynew" target="_blank" rel="noopener noreferrer">공식 키 발급 안내</a><a href="https://developers.coupang.com/ko/getting-started/creating-hmac-signature" target="_blank" rel="noopener noreferrer">공식 인증 안내</a>'}</div><button class="text-button" data-action="connection-detail" data-channel="${channel}" style="margin-top:14px">연결 범위와 확인 항목 ${icon('arrow')}</button></div></section>`;
+    }
+    function showDialog(title, subtitle, body, returnFocus = document.activeElement) {
+      state.dialogReturnFocus = returnFocus;
+      document.getElementById('dialogContent').innerHTML = `<div class="dialog-heading"><div><h2 id="dialogTitle">${title}</h2><p>${subtitle}</p></div><button class="icon-button" data-action="dialog-close" aria-label="상세 닫기">${icon('close')}</button></div><div class="dialog-body">${body}</div>`;
+      dialog.showModal();
+    }
+    function missionDetail(id) {
+      if (id === 'mapping') { go('mapping'); return; }
+      const stock = id === 'stock';
+      const title = stock ? '부족·품절 사례 검토' : '조회 상태 사례 검토';
+      const body = stock ? `<div class="mission-case-list"><article class="mission-case"><div class="mission-case-header"><div><h3>로켓그로스 · 코튼 파우치</h3><p>주문가능 재고 의미를 확인합니다.</p></div><span class="number low">4</span></div><span class="quantity-label">부족 예시 · 창고 보유량과 합산하지 않음</span></article><article class="mission-case"><div class="mission-case-header"><div><h3>스마트스토어 · 데일리 머그</h3><p>정상 조회에서 수량 0을 품절로 구분합니다.</p></div><span class="number zero">0</span></div><span class="quantity-label">품절 예시 · 조회 실패와 다름</span></article></div><div class="mission-record"><p>검토 기록은 진행만 바꿉니다. 재고와 실제 연결 상태는 바뀌지 않습니다.</p><button class="button small primary" data-action="mission-review" data-id="stock">부족·품절 검토 기록</button></div>` : `<div class="mission-case-list"><article class="mission-case"><div class="mission-case-header"><div><h3>쿠팡 판매자배송 · 데일리 머그</h3><p>마지막 성공값을 보존한 상태입니다.</p></div><span class="number">7</span></div><span class="quantity-label">마지막 성공 09:02 · 최근 조회 실패 09:39</span></article><article class="mission-case"><div class="mission-case-header"><div><h3>로켓그로스 · 접이식 보관함</h3><p>첫 조회 실패는 수량 0이 아닙니다.</p></div><span class="number none">—</span></div><span class="quantity-label">이전 성공값 없음 · 조회 실패</span></article></div><div class="mission-record"><p>검토 기록은 오류를 해결하지 않습니다. 수집 상태는 그대로 남습니다.</p><button class="button small primary" data-action="mission-review" data-id="sync">조회 상태 검토 기록</button></div>`;
+      showDialog(title, '샘플 데이터 · 실제 API 미연동', body);
+    }
+    function markMissionReview(id) {
+      if (!state.missions[id]) { state.missions[id] = true; dialog.close(); render(); notify(`${id === 'stock' ? '부족·품절' : '조회 상태'} 사례의 샘플 검토를 기록했습니다. 상태는 그대로입니다.`); }
+    }
+    function inventoryDetail(id) {
+      const item = inventory.find(row => row.id === id);
+      showDialog(item.name,`${item.option} · 샘플 데이터 · 실제 API 미연동`, `<div class="detail-quantity"><div><strong>${quantityMeaning(item)}</strong><span class="secondary">${channelLabel(item)} / ${fulfillmentLabel(item)} ${badge(item)}</span></div><span class="number ${quantityClass(item)}">${quantity(item)}${item.quantity !== null ? '<span style="font-size:13px;font-weight:400"> 개</span>' : ''}</span></div><dl class="key-value"><dt>내부 SKU</dt><dd>${item.sku || '미연결 · 상품 연결에서 후보 확인'}</dd><dt>샘플 계정</dt><dd>${accountLabel(item)}</dd><dt>원본 옵션 ID 예시</dt><dd>${item.externalId}</dd><dt>마지막 성공 예시</dt><dd>${item.lastSuccess ? `2026.10.04 ${item.lastSuccess}` : '없음 · 수량 확인 전'}</dd><dt>최근 시도 예시</dt><dd>2026.10.04 ${item.lastAttempt}</dd><dt>최근 조회 결과 예시</dt><dd>${item.state === 'stale' || item.state === 'failed' ? '조회 실패 · 원인 확인 필요 (가상 오류)' : stateLabels[item.state]}</dd><dt>데이터 출처</dt><dd>HTML 내부의 가상 샘플 · 실제 계정 응답 아님</dd></dl><div class="notice ${['stale','failed'].includes(item.state) ? 'warning' : ''}">${icon('info')}<p>${item.detail}</p></div><p>채널별 수량을 실제 창고 보유량으로 합산하지 않습니다. 판매수량은 재고에 반영하지 않습니다.</p>${item.fulfillment === 'rocket' ? '<div class="links"><a href="https://developers.coupang.com/ko/api/rocket-growth/rg-inventory-api" target="_blank" rel="noopener noreferrer">로켓그로스 재고 공식 근거</a></div>' : ''}`);
+    }
+    function orderDetail(id) {
+      const order = orders.find(row => row.id === id);
+      showDialog('주문 행 상세',`${order.id} · 개인정보 없는 샘플`, `<dl class="key-value"><dt>상품 / 판매 옵션</dt><dd>${order.name} / ${order.option}</dd><dt>내부 SKU</dt><dd>${order.sku}</dd><dt>채널 / 배송 방식</dt><dd>${channelLabel(order)} / ${fulfillmentLabel(order)}</dd><dt>샘플 계정</dt><dd>${accountLabel(order)}</dd><dt>예시 결제 시각</dt><dd>${order.date} ${order.time}</dd><dt>주문 행 수량</dt><dd>${order.quantity}개${order.fulfillment === 'rocket' ? ' · salesQuantity 예시, 재고 아님' : ''}</dd><dt>조회한 원본 상태</dt><dd>${order.original}</dd><dt>클레임 예시</dt><dd>${order.claim}${order.claimQuantity ? ` / 전체 ${order.quantity}개 중 ${order.claimQuantity}개` : ''}</dd><dt>데이터 출처</dt><dd>가상 샘플 · 실제 주문 응답 아님</dd></dl>${order.fulfillment === 'rocket' ? '<div class="notice warning">'+icon('info')+'<p><strong>출고 이후 조회되는 주문의 예시입니다.</strong> 결제 직후 주문 전체와 상태 변경은 확인할 수 없습니다. 취소·반품·교환 지원도 미확인으로 표시하며 추정하지 않습니다.</p></div><div class="links"><a href="https://developers.coupang.com/ko/api/rocket-growth/rg-order-apilist-query" target="_blank" rel="noopener noreferrer">로켓그로스 주문 공식 근거</a></div>' : '<div class="notice">'+icon('info')+'<p>주문 행의 수량과 부분 클레임을 각각 보존합니다. 화면은 조회용이며 발송·취소·주문 상태를 바꾸지 않습니다.</p></div>'}`);
+    }
+    function connectionDetail(channel) {
+      const naver = channel === 'naver';
+      showDialog(naver ? '스마트스토어 연결 범위' : '쿠팡 연결 범위', '실제 미연결 · 공식 문서 확인 2026.10.04 · 계정 검증 대기', `<dl class="key-value"><dt>실제 연결 상태</dt><dd>미연결 · 키 등록과 실제 호출 없음</dd><dt>조회할 정보</dt><dd>상품·옵션·재고·주문·지원되는 클레임</dd><dt>조회 방식</dt><dd>${naver ? '원상품 상세와 옵션 재고, 변경된 상품주문 ID와 상세 조회' : '판매자배송과 로켓그로스의 재고·주문을 별도 조회'}</dd><dt>수량 의미</dt><dd>${naver ? '채널 등록 재고 · 표준형 옵션 관리 여부를 함께 확인' : '판매자배송 등록 재고 / RG 주문가능 재고 분리'}</dd><dt>실제 검증</dt><dd>키·권한·발신 IP, 전체 페이지, 판매자센터 대조 모두 대기</dd></dl><div class="notice warning">${icon('info')}<p>${naver ? '표준형 옵션에서 관리 미사용을 수량 9,999만으로 판단하지 않습니다. 관리 여부를 확인하고 수량을 비워 표시합니다.' : 'RG 주문은 출고 이후 조회됩니다. 상태 변경과 취소·반품·교환 지원은 미확인입니다. 재고 조회의 주문가능 수량과 주문의 판매수량을 구분합니다.'}</p></div><div class="links">${naver ? '<a href="https://apicenter.commerce.naver.com/docs/commerce-api/current/read-origin-product-product" target="_blank" rel="noopener noreferrer">공식 상품·재고 조회</a><a href="https://apicenter.commerce.naver.com/docs/commerce-api/current/seller-get-last-changed-status-pay-order-seller" target="_blank" rel="noopener noreferrer">공식 변경 주문 조회</a>' : '<a href="https://developers.coupang.com/ko/api/products/query-quantitypricestatus-by-product-items" target="_blank" rel="noopener noreferrer">판매자배송 재고 근거</a><a href="https://developers.coupang.com/ko/api/rocket-growth/rg-inventory-api" target="_blank" rel="noopener noreferrer">RG 재고 근거</a><a href="https://developers.coupang.com/ko/api/rocket-growth/rg-order-apilist-query" target="_blank" rel="noopener noreferrer">RG 주문 근거</a>'}</div>`);
+    }
+    function notify(message) { clearTimeout(toastTimer); const toast = document.getElementById('toast'); toast.textContent = message; toast.hidden = false; toastTimer = setTimeout(() => { toast.hidden = true; }, 4200); }
+    function mappingChange(id, approve) {
+      const item = inventory.find(row => row.id === id);
+      const mapping = mappings.find(row => row.id === id);
+      const previous = item.sku;
+      if ((approve && item.sku) || (!approve && !item.sku)) return;
+      item.sku = approve ? mapping.chosen : null;
+      if (approve) {
+        state.badges.firstLink = true;
+        if (mappings.every(row => inventory.find(entry => entry.id === row.id)?.sku)) state.badges.reviewRound = true;
+      }
+      state.history.unshift({ time: '시안에서 방금', text: `${accountLabel(item)} / ${item.externalId} → ${approve ? `${item.sku} 샘플 연결 승인` : `${previous} 샘플 연결 해제`}` });
+      render();
+      notify(approve ? `샘플 연결 ${mappings.filter(row => inventory.find(entry => entry.id === row.id)?.sku).length}/3개 · 현재 화면에서만 유지됩니다.` : '샘플 연결을 해제했습니다. 연결 미션 진행도 함께 바뀝니다.');
+    }
+    document.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      if (button.dataset.view) { go(button.dataset.view); return; }
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+      if (action === 'dialog-close') dialog.close();
+      else if (action === 'about') showDialog('StockD 화면 시안', 'HTML 파일 하나로 살펴보는 미리보기', '<p>네이버 스마트스토어와 쿠팡의 상품·재고·주문을 조회하는 첫 화면 구성입니다. 모든 상품·수량·주문·조회 시각은 가상 샘플입니다.</p><p>오늘의 확인 미션은 페이지 열기와 재고·주문 화면 방문으로 자동 완료됩니다. 한국 날짜 기준의 확인 기록과 연재 이야기 진행을 이 브라우저에 저장하며, 나머지 샘플 연결·알림·연습 조작은 새로고침하면 초기화됩니다.</p><div class="notice">'+icon('info')+'<p><strong>실제 API·DB·로그인 미연결</strong><br>키를 입력받지 않으며 외부 API 요청·쇼핑몰 재고 수정·발송·주문 상태 변경을 수행하지 않습니다. 실제 운영 통계와 알림은 없습니다.</p></div><div class="links"><a href="https://app.notion.com/p/3ef15a85fa868135ae78d2102a1ad7b1" target="_blank" rel="noopener noreferrer">기획·요건·API 연결 문서</a></div>');
+      else if (action === 'inventory-detail') inventoryDetail(id);
+      else if (action === 'order-detail') orderDetail(id);
+      else if (action === 'connection-detail') connectionDetail(button.dataset.channel);
+      else if (action === 'mission-open') missionDetail(id);
+      else if (action === 'mission-review') markMissionReview(id);
+      else if (action === 'daily-reset') resetDailyChecks();
+      else if (action === 'story-open') openStory();
+      else if (action === 'story-select') openStory(Number(button.dataset.storyIndex), `[data-story-index="${button.dataset.storyIndex}"]`);
+      else if (action === 'story-prev') openStory(storyState.viewIndex - 1, '[data-action="story-prev"]');
+      else if (action === 'story-next') openStory(storyState.viewIndex + 1, '[data-action="story-next"]');
+      else if (action === 'inventory-attention' || action === 'inventory-errors') { state.inventoryFilters = { search: '', channel: '', fulfillment: '', status: action === 'inventory-attention' ? 'attention' : 'errors' }; go('inventory'); }
+      else if (action === 'inventory-reset') { state.inventoryFilters = { search: '', channel: '', fulfillment: '', status: '' }; render(); }
+      else if (action === 'order-reset') { state.orderFilters = { search: '', channel: '', fulfillment: '', status: '', from: '2026-10-03', to: '2026-10-04' }; render(); }
+      else if (action === 'mapping-approve' || action === 'mapping-release') mappingChange(id,action === 'mapping-approve');
+      else if (action === 'alert-filter') { state.alertFilter = button.dataset.filter; render(); }
+      else if (action === 'alert-acknowledge') { alerts.find(alert => alert.id === id).acknowledged = true; render(); notify('알림 예시를 확인했습니다. 재고·조회 오류 상태는 그대로 유지됩니다.'); }
+      else if (action === 'alert-detail') { const alert = alerts.find(row => row.id === id); if (alert.item) inventoryDetail(alert.item); else go(alert.target); }
+      else if (action === 'sample-reset') { inventory.filter(item => ['c2','c3','n5'].includes(item.id)).forEach(item => { item.sku = null; }); alerts.forEach(alert => { alert.acknowledged = false; }); state.threshold = 5; state.history = []; state.missions = { stock: false, sync: false }; state.badges = { firstLink: false, reviewRound: false }; state.effects = true; render(); notify('샘플 연결·알림·검토 진행·배지를 초기화했습니다.'); }
+    });
+    document.addEventListener('input', event => {
+      const input = event.target;
+      if (input.id === 'inventorySearch') { state.inventoryFilters.search = input.value; renderInventoryResults(); }
+      if (input.id === 'orderSearch') { state.orderFilters.search = input.value; renderOrderResults(); }
+    });
+    document.addEventListener('change', event => {
+      const input = event.target;
+      const inventoryKeys = { inventoryChannel: 'channel', inventoryFulfillment: 'fulfillment', inventoryStatus: 'status' };
+      const orderKeys = { orderChannel: 'channel', orderFulfillment: 'fulfillment', orderStatus: 'status', orderFrom: 'from', orderTo: 'to' };
+      if (inventoryKeys[input.id]) { state.inventoryFilters[inventoryKeys[input.id]] = input.value; renderInventoryResults(); }
+      if (orderKeys[input.id]) { state.orderFilters[orderKeys[input.id]] = input.value; renderOrderResults(); }
+      if (input.dataset.mappingId) mappings.find(mapping => mapping.id === input.dataset.mappingId).chosen = input.value;
+      if (input.id === 'thresholdInput') {
+        const threshold = Number(input.value);
+        if (!Number.isInteger(threshold) || threshold < 0 || threshold > 999 || input.value === '') { input.value = state.threshold; notify('예시 기준은 0부터 999 사이의 정수로 입력해 주세요.'); return; }
+        state.threshold = threshold;
+        notify(`예시 숫자 강조 기준을 ${threshold}개로 바꿨습니다. 실제 경보는 생성되지 않습니다.`);
+      }
+      if (input.id === 'motionToggle') { state.effects = input.checked; document.body.dataset.effects = state.effects ? 'on' : 'off'; notify(state.effects ? '샘플 확인 효과를 켰습니다.' : '샘플 확인 효과를 껐습니다.'); }
+    });
+    dialog.addEventListener('click', event => { if (event.target === dialog) { const bounds = dialog.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close(); } });
+    dialog.addEventListener('close', () => { const target = state.dialogReturnFocus; state.dialogReturnFocus = null; if (target && document.contains(target)) target.focus(); });
+    window.addEventListener('storage', event => {
+      if (event.key === storyStorageKey) {
+        if (event.newValue === null) { storyState.unlockedDates = []; storyState.lastViewed = 0; }
+        else {
+          let incoming;
+          try { incoming = cleanStoryProgress(JSON.parse(event.newValue)); }
+          catch { return; }
+          Object.assign(storyState, cleanStoryProgress({ version: 1, unlockedDates: [...incoming.unlockedDates, ...storyState.unlockedDates], lastViewed: incoming.lastViewed }));
+          saveStoryProgress();
+        }
+        refreshStoryWidgets();
+        refreshStoryReader();
+        return;
+      }
+      if (event.key !== dailyStorageKey && event.key !== null) return;
+      if (event.key === null) { storyState.unlockedDates = []; storyState.lastViewed = 0; }
+      dailyState.date = currentDailyDate();
+      if (event.newValue === null) {
+        dailyState.days = { [dailyState.date]: { opened: true, inventory: false, orders: false } };
+        saveDailyDays(false);
+      } else {
+        let incoming;
+        try { incoming = cleanDailyDays(JSON.parse(event.newValue)); }
+        catch { return; }
+        dailyState.days = mergeDailyDays(incoming, dailyState.days);
+        // 다른 탭이 이전 상태로 덮어써도 이미 완료한 확인은 다시 보존합니다.
+        if (JSON.stringify(incoming) !== JSON.stringify(dailyState.days)) saveDailyDays(false);
+      }
+      recordDailyCheck('opened');
+      syncStoryRewards();
+      refreshDailyWidgets();
+    });
+    function refreshDailyDate() {
+      if (document.visibilityState !== 'visible') return;
+      if (currentDailyDate() !== dailyState.date) { render(); return; }
+      const previousProgress = dailyProgress();
+      if (state.view === 'inventory' && main.querySelector('#inventoryResults .result-summary')) recordDailyCheck('inventory');
+      if (state.view === 'orders' && main.querySelector('#orderResults .result-summary')) recordDailyCheck('orders');
+      if (dailyProgress() !== previousProgress) refreshDailyWidgets();
+    }
+    document.addEventListener('visibilitychange', refreshDailyDate);
+    window.addEventListener('focus', refreshDailyDate);
+    // 자정과 절전 복귀를 한국 날짜로 다시 확인합니다. 숨긴 탭에는 확인을 부여하지 않습니다.
+    setInterval(() => { if (currentDailyDate() !== dailyState.date) refreshDailyDate(); }, 30000);
+    render();
+  </script>
+</body>
+</html>

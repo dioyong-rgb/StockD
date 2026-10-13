@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>연결·설정 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="settings" data-effects="on">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>연결·설정</h1>
+        <p>계정의 실제 연결 상태와 연결 전 준비할 내용을 확인합니다.</p>
+      </div>
+    </div>
+
+    <div class="notice notice-info" role="note">
+      <p><strong>실제 계정은 모두 미연결입니다.</strong> 이 시안은 키나 토큰을 입력받지 않고, 인증도 요청하지 않으며, 외부 호출도 하지 않습니다. 연결은 서버에서 준비하고 계정별 조회 결과를 검증한 뒤 완료로 표시합니다.</p>
+    </div>
+
+    <!-- 채널 계정 상태: 읽기 전용 표시만, 입력창·연결 동작 없음 -->
+    <section class="card section" aria-labelledby="channels-title">
+      <div class="card-header">
+        <div>
+          <h2 id="channels-title">채널 계정</h2>
+          <p>네이버와 쿠팡 계정의 연결 상태입니다. 모든 값은 가상 샘플입니다.</p>
+        </div>
+        <span class="badge badge-sample">샘플</span>
+      </div>
+      <div class="card-body">
+        <div class="grid grid-3" id="channel-list"></div>
+      </div>
+    </section>
+
+    <!-- 연결 절차 안내 -->
+    <section class="card section" aria-labelledby="steps-title">
+      <div class="card-header">
+        <div>
+          <h2 id="steps-title">연결 절차 안내</h2>
+          <p>실제 연결 시 서버에서 진행할 순서입니다. 이 시안에서는 실행되지 않습니다.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <ol class="steps">
+          <li><strong>준비 · 계정과 권한 확인</strong><span>네이버는 앱 활성 상태, 상품·주문 API 그룹, 호출 IPv4를 확인합니다. 쿠팡은 WING API 키, 등록 IP, 판매자배송·로켓그로스 권한을 확인합니다.</span></li>
+          <li><strong>인증 · 서버에서 진행</strong><span>네이버는 서버에서 OAuth2 토큰을 발급받고, 쿠팡은 서버에서 HMAC 서명을 만들어 요청합니다. 비밀값은 브라우저에 보내지 않습니다.</span></li>
+          <li><strong>조회 · 상품, 옵션, 재고, 주문</strong><span>지원되는 범위와 수량 의미를 구분해 가져옵니다.</span></li>
+          <li><strong>검증 · 판매자센터와 대조</strong><span>전체 페이지와 실제 조회 사례를 판매자센터와 맞춰 본 뒤 연결 완료로 기록합니다.</span></li>
+        </ol>
+        <h3>공식 근거 문서</h3>
+        <p class="text-small text-muted">링크는 걸지 않고 문서명만 적습니다. 판매자센터와 각 개발자 사이트에서 직접 찾아 확인해 주세요.</p>
+        <ul>
+          <li>네이버 커머스API: 인증 안내, 권한·제약 안내</li>
+          <li>쿠팡 개발자센터: 오픈 API 키 발급 안내, HMAC 서명 생성 안내</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 내부 설정: 이 패널 안에서만 아래 4개 설정을 다룬다 -->
+    <section class="card section" aria-labelledby="internal-title">
+      <div class="card-header">
+        <div>
+          <h2 id="internal-title">내부 설정</h2>
+          <p>이 화면 안에서만 바뀌고 저장하지 않습니다. 새로고침하거나 다른 화면으로 이동하면 처음 값으로 돌아갑니다.</p>
+        </div>
+        <span class="badge badge-sample">샘플 설정</span>
+      </div>
+      <div class="card-body stack">
+
+        <!-- 1. 수량 강조 기준 -->
+        <form id="threshold-form" class="stack" novalidate aria-labelledby="threshold-title">
+          <div>
+            <h3 id="threshold-title">수량 강조 기준</h3>
+            <p class="text-muted">이 화면에서 입력값 검증(0 이상의 정수)을 시연할 뿐이며, 재고·대시보드 등 다른 화면의 강조에는 반영되지 않습니다. 저장하지 않고, 실제 알림이나 쇼핑몰 재고도 바뀌지 않습니다.</p>
+          </div>
+          <div class="field">
+            <label for="threshold-input">수량 기준 (개, 0 이상의 정수)</label>
+            <input id="threshold-input" name="threshold" type="number" inputmode="numeric" min="0" step="1" value="5" aria-describedby="threshold-hint threshold-error">
+            <p class="field-hint" id="threshold-hint">기본값은 5입니다.</p>
+            <p class="field-error" id="threshold-error" role="alert" hidden></p>
+          </div>
+          <div class="cluster">
+            <button type="submit" class="button button-primary">값 확인</button>
+            <span class="text-small text-muted" id="threshold-current" role="status">확인한 값: 5개</span>
+          </div>
+        </form>
+
+        <hr>
+
+        <!-- 2. 효과 사용 -->
+        <div class="stack">
+          <div>
+            <h3 id="effects-title">화면 효과</h3>
+            <p class="text-muted">알림(토스트)이 나타날 때의 짧은 전환 효과를 켜고 끕니다. 시스템의 움직임 줄이기 설정도 따릅니다.</p>
+          </div>
+          <label class="check-field" for="effects-toggle">
+            <input id="effects-toggle" type="checkbox" checked aria-describedby="effects-state">
+            효과 사용
+          </label>
+          <p class="text-small text-muted" id="effects-state" role="status">효과: 켜짐</p>
+        </div>
+
+        <hr>
+
+        <!-- 3. 샘플 초기화 (일일 기록과 별개) -->
+        <div class="stack">
+          <div>
+            <h3>샘플 초기화</h3>
+            <p class="text-muted">이 화면 안에서 바꾼 연결·알림 확인과 수량 기준 입력을 처음 상태로 되돌립니다. 다른 화면으로 이동하면 샘플은 어차피 처음 상태로 돌아갑니다. 매일 확인의 일일 기록과 이야기 진행은 지워지지 않고 그대로 보존됩니다.</p>
+          </div>
+          <div class="cluster">
+            <button type="button" class="button" id="reset-sample-button">샘플 초기화</button>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- 4. 일일 기록 삭제 (샘플 초기화와 별개) -->
+        <div class="stack">
+          <div>
+            <h3>일일 기록 삭제</h3>
+            <p class="text-muted">이 브라우저에 저장된 매일 확인의 완료 날짜와 방문 기록을 지웁니다. 이야기 진행은 유지됩니다. 샘플 초기화와는 별개의 동작입니다.</p>
+          </div>
+          <div class="cluster">
+            <button type="button" class="button button-danger" id="clear-daily-button">일일 기록 삭제</button>
+          </div>
+          <p class="text-small text-muted" id="clear-daily-note" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 확인 대화상자: 샘플 초기화와 일일 기록 삭제가 함께 사용 -->
+    <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+      <div class="dialog-header">
+        <div>
+          <h2 id="confirm-title">확인</h2>
+        </div>
+      </div>
+      <div class="dialog-body">
+        <p id="confirm-message"></p>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="button" id="confirm-cancel">취소</button>
+        <button type="button" class="button button-danger" id="confirm-ok">확인</button>
+      </div>
+    </dialog>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var StockD = window.StockD
+      var DEFAULT_THRESHOLD = StockD.data.meta.defaultThreshold
+      var MAX_THRESHOLD = 999999
+
+      function byId(id) { return document.getElementById(id) }
+
+      function showToast(message) {
+        if (typeof StockD.toast === 'function') StockD.toast(message)
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        })
+      }
+
+      // 채널 계정 카드: 읽기 전용 표시만 만든다
+      function renderChannels() {
+        var labels = StockD.data.labels
+        byId('channel-list').innerHTML = StockD.data.channels.map(function (item) {
+          var scope = item.channel === 'coupang'
+            ? labels.fulfillment[item.fulfillment] + ' · ' + labels.quantityKind[item.fulfillment]
+            : labels.quantityKind[item.fulfillment]
+          return '<article class="card" aria-label="' + escapeHtml(item.label) + '">' +
+            '<div class="card-body stack">' +
+            '<div><span class="channel channel-' + item.channel + '">' + escapeHtml(item.label) + '</span>' +
+            '<p class="text-small text-muted">' + escapeHtml(item.account) + '</p></div>' +
+            '<span class="badge badge-neutral">' + escapeHtml(item.status) + '</span>' +
+            '<dl class="key-value">' +
+            '<dt>키·조회 권한</dt><dd>' + escapeHtml(item.keyStatus) + '</dd>' +
+            '<dt>수량 의미</dt><dd>' + escapeHtml(scope) + '</dd>' +
+            '<dt>실제 마지막 성공</dt><dd>' + escapeHtml(StockD.format.formatDateTime(item.lastSuccess)) + '</dd>' +
+            '<dt>실제 최근 시도</dt><dd>' + escapeHtml(StockD.format.formatDateTime(item.lastAttempt)) + '</dd>' +
+            '</dl>' +
+            '</div></article>'
+        }).join('')
+      }
+
+      // ---- 확인 대화상자 ----
+      var dialog = byId('confirm-dialog')
+      var pendingAction = null
+      var dialogTrigger = null
+
+      function openConfirm(options, trigger) {
+        dialogTrigger = trigger
+        pendingAction = options.onConfirm
+        byId('confirm-title').textContent = options.title
+        byId('confirm-message').textContent = options.message
+        byId('confirm-ok').textContent = options.okLabel
+        dialog.showModal()
+        byId('confirm-cancel').focus()
+      }
+
+      function restoreFocus() {
+        if (dialogTrigger && typeof dialogTrigger.focus === 'function') dialogTrigger.focus()
+      }
+
+      byId('confirm-cancel').addEventListener('click', function () {
+        pendingAction = null
+        dialog.close()
+      })
+      byId('confirm-ok').addEventListener('click', function () {
+        var action = pendingAction
+        pendingAction = null
+        dialog.close()
+        if (action) action()
+      })
+      // Escape 등 어떤 방식으로 닫혀도 초점을 눌렀던 버튼으로 돌린다
+      dialog.addEventListener('close', function () {
+        pendingAction = null
+        restoreFocus()
+      })
+
+      // ---- 1. 수량 강조 기준 ----
+      var thresholdInput = byId('threshold-input')
+      var thresholdError = byId('threshold-error')
+      var thresholdCurrent = byId('threshold-current')
+
+      function setThresholdError(message) {
+        if (message) {
+          thresholdError.textContent = message
+          thresholdError.hidden = false
+          thresholdInput.setAttribute('aria-invalid', 'true')
+        } else {
+          thresholdError.textContent = ''
+          thresholdError.hidden = true
+          thresholdInput.removeAttribute('aria-invalid')
+        }
+      }
+
+      // 정수 0 이상만 허용 (빈 값, 소수, 음수, 지수 표기 거부)
+      function parseThreshold(text) {
+        var trimmed = String(text).trim()
+        if (trimmed === '') return { ok: false, message: '값을 입력해 주세요. 0 이상의 정수만 입력할 수 있습니다.' }
+        if (!/^\d+$/.test(trimmed)) return { ok: false, message: '0 이상의 정수만 입력할 수 있습니다. 소수, 음수, 문자는 사용할 수 없습니다.' }
+        var value = Number(trimmed)
+        if (value > MAX_THRESHOLD) return { ok: false, message: MAX_THRESHOLD.toLocaleString('ko-KR') + ' 이하의 정수를 입력해 주세요.' }
+        return { ok: true, value: value }
+      }
+
+      // 확인한 값을 이 화면에만 표시한다 (다른 화면이나 StockD.state 에는 넘기지 않음)
+      function showThreshold(value) {
+        thresholdCurrent.textContent = '확인한 값: ' + value + '개'
+      }
+
+      byId('threshold-form').addEventListener('submit', function (event) {
+        event.preventDefault()
+        var result = parseThreshold(thresholdInput.value)
+        if (!result.ok) {
+          setThresholdError(result.message)
+          thresholdInput.focus()
+          return
+        }
+        setThresholdError('')
+        showThreshold(result.value)
+        showToast('입력한 수량 기준 ' + result.value + '개를 확인했습니다. 이 화면에서만 확인하며 다른 화면에는 반영되지 않습니다.')
+      })
+      thresholdInput.addEventListener('input', function () {
+        if (thresholdInput.getAttribute('aria-invalid') === 'true') setThresholdError('')
+      })
+
+      // ---- 2. 효과 사용 ----
+      var effectsToggle = byId('effects-toggle')
+      var effectsState = byId('effects-state')
+
+      function applyEffects(on) {
+        document.body.dataset.effects = on ? 'on' : 'off'
+        effectsState.textContent = '효과: ' + (on ? '켜짐' : '꺼짐') + ' (알림 등장 효과에 적용됩니다)'
+      }
+
+      effectsToggle.addEventListener('change', function () {
+        applyEffects(effectsToggle.checked)
+        showToast(effectsToggle.checked ? '효과를 켰습니다.' : '효과를 껐습니다.')
+      })
+
+      // ---- 3. 샘플 초기화 ----
+      byId('reset-sample-button').addEventListener('click', function (event) {
+        openConfirm({
+          title: '샘플을 초기화할까요?',
+          message: '이 화면 안에서 바꾼 연결·알림 확인과 수량 기준 입력이 처음 상태로 돌아갑니다. 다른 화면으로 이동해도 샘플은 처음 상태로 돌아옵니다. 일일 기록과 이야기 진행은 그대로 보존됩니다.',
+          okLabel: '샘플 초기화',
+          onConfirm: function () {
+            StockD.resetSample()
+            // 이 화면의 수량 기준 입력도 기본값으로 맞춘다
+            setThresholdError('')
+            thresholdInput.value = String(DEFAULT_THRESHOLD)
+            showThreshold(DEFAULT_THRESHOLD)
+            showToast('이 화면의 샘플 값을 처음 상태로 되돌렸습니다. 일일 기록은 보존했습니다.')
+          }
+        }, event.currentTarget)
+      })
+
+      // ---- 4. 일일 기록 삭제 ----
+      var clearDailyButton = byId('clear-daily-button')
+      var clearDailyNote = byId('clear-daily-note')
+
+      function canClearDaily() {
+        return !!(StockD.missions && typeof StockD.missions.clearDaily === 'function')
+      }
+
+      if (!canClearDaily()) {
+        clearDailyNote.textContent = '일일 기록 기능을 불러오지 못해 지금은 삭제할 수 없습니다.'
+      }
+
+      clearDailyButton.addEventListener('click', function (event) {
+        if (!canClearDaily()) {
+          showToast('일일 기록 기능을 사용할 수 없어 삭제하지 못했습니다.')
+          return
+        }
+        openConfirm({
+          title: '일일 기록을 삭제할까요?',
+          message: '이 브라우저에 저장된 매일 확인의 완료 날짜와 방문 기록이 지워지며 되돌릴 수 없습니다. 이야기 진행과 샘플 설정은 유지됩니다.',
+          okLabel: '일일 기록 삭제',
+          onConfirm: function () {
+            StockD.missions.clearDaily()
+            showToast('일일 기록을 삭제했습니다. 이야기 진행은 유지됩니다.')
+          }
+        }, event.currentTarget)
+      })
+
+      renderChannels()
+      applyEffects(true)
+      showThreshold(DEFAULT_THRESHOLD)
+    })()
+  </script>
+</body>
+</html>

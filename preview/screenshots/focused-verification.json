@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-04T06:22:18.722Z",
+  "total": 7,
+  "passed": 7,
+  "failed": 0,
+  "errors": [],
+  "requests": [],
+  "results": [
+    {
+      "name": "360px 대시보드 연결 안내 → 선택 메뉴 표시",
+      "status": "통과",
+      "bounds": {
+        "left": 267.875,
+        "right": 360.015625,
+        "navLeft": 0,
+        "navRight": 360,
+        "scroll": 221,
+        "visible": true
+      }
+    },
+    {
+      "name": "360px 대시보드 후보 보기 → 선택 메뉴 표시",
+      "status": "통과",
+      "bounds": {
+        "left": 266.4375,
+        "right": 359.65625,
+        "navLeft": 0,
+        "navRight": 360,
+        "scroll": 30,
+        "visible": true
+      }
+    },
+    {
+      "name": "모바일 4개 표의 시각적 가로 이동 안내",
+      "status": "통과"
+    },
+    {
+      "name": "재고 검색·필터 재생성 뒤 안내 중복 없이 유지",
+      "status": "통과"
+    },
+    {
+      "name": "주문 검색·필터 재생성 뒤 안내 중복 없이 유지",
+      "status": "통과"
+    },
+    {
+      "name": "수정 영향 확인: 3개 해상도 × 6개 화면 전체 가로 넘침 없음",
+      "status": "통과"
+    },
+    {
+      "name": "수정 후 브라우저 오류·자동 외부 요청 0",
+      "status": "통과"
+    }
+  ]
+}

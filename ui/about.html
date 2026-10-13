@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>회사 소개 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="about">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>회사 소개</h1>
+        <p>StockD는 네이버·쿠팡의 재고와 주문을 한곳에서 조회하는 읽기 전용 도구입니다.</p>
+      </div>
+    </div>
+
+    <div class="notice notice-info" role="note">
+      <p><strong>현재 화면은 시안입니다.</strong> 모든 채널이 실제로 연결되어 있지 않으며, 표시되는 값은 가상 샘플입니다.</p>
+    </div>
+
+    <section class="section" aria-labelledby="about-features">
+      <h2 id="about-features">StockD가 하는 일</h2>
+      <div class="grid grid-3">
+        <section class="card">
+          <div class="card-header"><h3>조회 전용</h3></div>
+          <div class="card-body">
+            <p>여러 쇼핑몰의 상품·옵션 재고와 주문을 한 화면에서 확인합니다. 쇼핑몰의 데이터를 바꾸는 기능은 없습니다.</p>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-header"><h3>상태 구분</h3></div>
+          <div class="card-body">
+            <p>품절, 조회 실패, 미지원, 지원 미확인을 서로 다른 상태로 보여 줍니다. 확인하지 못한 수량을 0으로 표시하지 않습니다.</p>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-header"><h3>마지막 성공값 유지</h3></div>
+          <div class="card-body">
+            <p>조회가 실패해도 마지막으로 성공한 값과 시각을 남겨 둡니다. 실패 응답이 성공한 값을 덮어쓰지 않습니다.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="about-channels">
+      <h2 id="about-channels">지원 채널</h2>
+      <div class="notice notice-warn" role="note">
+        <p><strong>아래 채널은 모두 실제 미연결 상태이며 시안 화면입니다.</strong> 실제 API 연동과 검증이 끝나기 전에는 연동 완료로 표시하지 않습니다.</p>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="지원 채널 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:560px">
+        <table class="table responsive-table">
+          <thead>
+            <tr><th scope="col">채널</th><th scope="col">배송 구분</th><th scope="col">범위</th><th scope="col">현재 상태</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="cell-title" data-label="채널"><span class="channel channel-naver">네이버 스마트스토어</span></td>
+              <td data-label="배송 구분">판매자배송</td>
+              <td data-label="범위">첫 버전</td>
+              <td data-label="현재 상태"><span class="badge badge-neutral">실제 미연결 · 시안</span></td>
+            </tr>
+            <tr>
+              <td class="cell-title" data-label="채널"><span class="channel channel-coupang">쿠팡</span></td>
+              <td data-label="배송 구분">판매자배송</td>
+              <td data-label="범위">첫 버전</td>
+              <td data-label="현재 상태"><span class="badge badge-neutral">실제 미연결 · 시안</span></td>
+            </tr>
+            <tr>
+              <td class="cell-title" data-label="채널"><span class="channel channel-coupang">쿠팡</span></td>
+              <td data-label="배송 구분">로켓그로스</td>
+              <td data-label="범위">첫 버전</td>
+              <td data-label="현재 상태"><span class="badge badge-neutral">실제 미연결 · 시안</span></td>
+            </tr>
+            <tr>
+              <td class="cell-title" data-label="채널">G마켓 · 옥션</td>
+              <td data-label="배송 구분">확인 필요</td>
+              <td data-label="범위">후속 확장 예정</td>
+              <td data-label="현재 상태"><span class="badge badge-neutral">실제 미연결 · 시안</span></td>
+            </tr>
+            <tr>
+              <td class="cell-title" data-label="채널">11번가</td>
+              <td data-label="배송 구분">확인 필요</td>
+              <td data-label="범위">후속 확장 예정</td>
+              <td data-label="현재 상태"><span class="badge badge-neutral">실제 미연결 · 시안</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="about-no">
+      <h2 id="about-no">하지 않는 일</h2>
+      <section class="card">
+        <div class="card-body">
+          <ul>
+            <li>쇼핑몰 재고 수정</li>
+            <li>발송 처리</li>
+            <li>주문 상태 변경</li>
+          </ul>
+          <p class="text-muted">첫 버전은 조회와 앱 내부 알림만 제공하며 쇼핑몰에 쓰는 기능은 포함하지 않습니다.</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="section" aria-labelledby="about-company">
+      <h2 id="about-company">회사 정보</h2>
+      <p class="text-muted">아래 항목은 서비스 개시 전에 실제 정보로 교체해야 하는 자리표시자입니다.</p>
+      <section class="card">
+        <div class="card-body">
+          <dl class="key-value">
+            <dt>회사명</dt><dd><span class="placeholder">[회사명 입력 필요]</span></dd>
+            <dt>주소</dt><dd><span class="placeholder">[입력 필요]</span></dd>
+            <dt>전화</dt><dd><span class="placeholder">[입력 필요]</span></dd>
+            <dt>사업자등록번호</dt><dd><span class="placeholder">[입력 필요]</span></dd>
+            <dt>이메일</dt><dd>contact@example.com <span class="text-muted">(예시)</span></dd>
+          </dl>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

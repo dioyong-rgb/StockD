@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>매일 확인 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <style>
+    /* 이 페이지 전용 보조 스타일 (토큰만 사용) */
+    .story-cuts { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--space-2); list-style: none; }
+    .story-cuts li { min-width: 0; }
+    .story-cuts .story-cut { width: 100%; }
+    .story-episode + .story-episode { margin-top: var(--space-4); }
+    .story-episode h3 { margin-bottom: var(--space-2); font-size: var(--font-size-md); }
+    .story-reader { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+    .story-art { display: block; width: 100%; height: auto; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-brand-soft); }
+    .story-copy h3 { margin: var(--space-1) 0 var(--space-2); font-size: 20px; }
+    .story-copy h3:focus { outline: none; }
+    .story-copy p.story-text { line-height: 1.85; word-break: keep-all; }
+    .story-copy .cluster { margin-top: var(--space-4); }
+    .mapping-practice { flex: 1 1 100%; display: grid; gap: var(--space-3); list-style: none; }
+    .mapping-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-md); }
+    .mapping-row .field { min-width: 180px; }
+    .case-grid { display: grid; gap: var(--space-3); }
+    .case-card { padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-md); }
+    .case-card .case-number { display: block; margin: var(--space-1) 0; font-size: 25px; font-weight: var(--font-weight-bold); }
+    .mission-note { margin-top: var(--space-3); color: var(--color-text-muted); font-size: var(--font-size-xs); }
+    .badge-notes { list-style: disc; padding-left: var(--space-5); }
+    .meta-line-spaced { margin-top: var(--space-4); }
+    .meta-line { color: var(--color-text-muted); font-size: var(--font-size-xs); }
+    @media (max-width: 480px) {
+      .page .card-body { padding: var(--space-3); }
+      .stamps { gap: 4px; }
+      .stamp { padding: var(--space-2) 0; }
+      .stamp time { white-space: nowrap; letter-spacing: -.03em; }
+      .story-cuts { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+    }
+    @media (max-width: 600px) {
+      .story-reader { grid-template-columns: minmax(0, 1fr); }
+      .story-art { max-height: 200px; }
+      .mapping-row .field, .mapping-row .button { width: 100%; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      body[data-effects="on"] .achievement.is-new { animation: earned-in 160ms ease-out; }
+    }
+    @keyframes earned-in { from { opacity: .4; } to { opacity: 1; } }
+  </style>
+</head>
+<body data-page="missions">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>매일 확인</h1>
+        <p>대시보드·재고·주문 화면을 한 번씩 열면 방문이 자동으로 기록됩니다. 쉬어도 기록은 유지돼요.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="notice notice-info" role="note">
+        <p><strong>화면 방문 기록일 뿐 실제 재고 점검이나 API 정상 여부를 뜻하지 않습니다.</strong> 3/3이어도 품절·조회 실패·미연결 경고는 그대로 남습니다.</p>
+      </div>
+      <div class="notice notice-warn" id="storageNotice" role="status" hidden>
+        <p><strong>이 브라우저에 저장할 수 없습니다.</strong> 기록과 이야기 진행은 현재 열기에서만 유지되며, 닫거나 새로고침하면 사라질 수 있습니다.</p>
+      </div>
+
+      <!-- 오늘의 미션 -->
+      <section class="card" aria-labelledby="todayTitle">
+        <div class="card-header">
+          <div>
+            <h2 id="todayTitle">오늘의 미션 <span class="badge badge-sample">샘플</span></h2>
+            <p><time id="todayDate">—</time> · 한국 시간 기준</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="progress-label">
+            <strong id="todayProgressText">오늘 진행 0/3</strong>
+            <span id="todayStorageText">이 브라우저에 기록</span>
+          </div>
+          <progress class="progress" id="todayProgress" max="3" value="0" aria-label="오늘의 샘플 확인 미션 0 / 3"></progress>
+          <p class="mission-note" id="todayStatus" role="status">남은 화면을 열면 방문이 기록되어 오늘 미션이 완료됩니다.</p>
+        </div>
+        <ul class="card-list" id="todaySteps"></ul>
+        <p class="card-footer">완료 버튼은 없습니다. 해당 화면을 열면 자동으로 기록됩니다.</p>
+      </section>
+
+      <!-- 최근 7일 -->
+      <section class="card" aria-labelledby="weekTitle">
+        <div class="card-header">
+          <div>
+            <h2 id="weekTitle">최근 7일 스탬프</h2>
+            <p id="weekSummary">0일 완료 · 쉬어도 기록은 유지돼요</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <ol class="stamps" id="weekStamps"></ol>
+        </div>
+      </section>
+
+      <!-- 연재 이야기 -->
+      <section class="card" aria-labelledby="storyTitle">
+        <div class="card-header">
+          <div>
+            <h2 id="storyTitle">상자 친구의 여행</h2>
+            <p id="storyCount">열린 이야기 0/15컷</p>
+          </div>
+          <button type="button" class="button button-primary" id="storyStart" disabled>첫 컷 기다리기</button>
+        </div>
+        <div class="card-body stack">
+          <p id="storyGuide">오늘 미션 3개를 마치면 첫 이야기가 열려요.</p>
+          <div class="notice notice-info" role="note">
+            <p>이야기는 허구이며 실제 재고·주문 처리와 무관합니다. 이야기를 읽어도 새 컷이 열리거나 미션 진행이 바뀌지 않습니다.</p>
+          </div>
+          <div id="storyEpisodes"></div>
+          <p class="meta-line" id="storyStorageNote" role="status"></p>
+        </div>
+      </section>
+
+      <!-- 배지 -->
+      <section class="card" aria-labelledby="badgeTitle">
+        <div class="card-header">
+          <div>
+            <h2 id="badgeTitle">샘플 성취 배지</h2>
+            <p>샘플 성취 · 당시 수행 기록이며 실제 운영 상태를 뜻하지 않습니다.</p>
+          </div>
+        </div>
+        <div class="card-body stack">
+          <div class="cluster" id="badgeList"></div>
+          <ul class="stack text-small text-muted badge-notes">
+            <li><strong>첫 연결 체험</strong>: 아래 &lsquo;추가 샘플 연습&rsquo;의 옵션 연결 체험에서 샘플 연결을 한 번이라도 승인하면 획득합니다. 연결을 해제해도 이미 얻은 배지는 유지됩니다.</li>
+            <li><strong>세 옵션 연결 체험</strong>: 옵션 연결 체험에서 옵션 3개를 모두 샘플 연결 상태로 만든 시점에 획득합니다. 사례 검토 기록은 조건이 아닙니다.</li>
+            <li>배지는 매일 미션·이야기 해금과 무관하며, 이 페이지를 새로고침하면 초기화됩니다(저장하지 않음).</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 추가 샘플 연습 (접힘) -->
+      <section class="card" aria-label="추가 샘플 연습">
+        <details class="disclosure" id="samplePractice">
+          <summary>추가 샘플 연습 <span>기존 사례·연결 체험</span></summary>
+          <div class="disclosure-body stack">
+            <p>오늘의 미션과 별도로 진행하는 연습입니다. 이 페이지 안에서만 동작하며 저장하지 않아 새로고침하면 초기화됩니다. 화면을 열거나 방문하는 것으로는 진행되지 않고, 검토 기록 버튼이나 연결 승인으로만 진행합니다. 실제 재고·연결 상태는 바뀌지 않습니다.</p>
+            <div>
+              <div class="progress-label">
+                <strong id="practiceProgressText">검토 진행 0/3</strong>
+                <span>이 페이지에서만 유지</span>
+              </div>
+              <progress class="progress" id="practiceProgress" max="3" value="0" aria-label="샘플 검토 진행 0 / 3"></progress>
+              <p class="mission-note" id="practiceStatus" role="status">샘플 사례부터 하나씩 확인해 볼까요.</p>
+            </div>
+            <ul class="card-list" id="practiceList"></ul>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <!-- 이야기 읽기 -->
+  <dialog id="storyDialog" class="dialog-wide" aria-labelledby="storyDialogTitle">
+    <div class="dialog-header">
+      <div>
+        <h2 id="storyDialogTitle">상자 친구의 여행</h2>
+        <p id="storyDialogSub">연재 이야기 · 허구</p>
+      </div>
+      <button type="button" class="icon-button" data-close="story" aria-label="이야기 닫기">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="story-reader">
+        <div id="storyArt"></div>
+        <div class="story-copy" aria-live="polite">
+          <p class="text-small text-muted" id="storyChapter"></p>
+          <h3 id="storySceneTitle" tabindex="-1"></h3>
+          <p class="story-text" id="storySceneText"></p>
+          <div class="cluster">
+            <button type="button" class="button" id="storyPrev">이전 컷</button>
+            <button type="button" class="button" id="storyNext">다음 컷</button>
+          </div>
+        </div>
+      </div>
+      <p class="meta-line meta-line-spaced">상자 친구의 허구 이야기입니다. 실제 재고·주문·연결 상태를 나타내지 않으며 실제 재고·주문 처리와 무관합니다.</p>
+    </div>
+  </dialog>
+
+  <!-- 샘플 사례 검토 -->
+  <dialog id="caseDialog" aria-labelledby="caseDialogTitle">
+    <div class="dialog-header">
+      <div>
+        <h2 id="caseDialogTitle"></h2>
+        <p>샘플 데이터 · 실제 API 미연동</p>
+      </div>
+      <button type="button" class="icon-button" data-close="case" aria-label="사례 닫기">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="case-grid" id="caseBody"></div>
+      <p class="text-small text-muted meta-line-spaced" id="caseNote"></p>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="button button-primary button-small" id="caseRecord"></button>
+    </div>
+  </dialog>
+
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/missions.js"></script>
+  <script src="assets/story-data.js"></script>
+  <script>
+    (function () {
+      var missions = window.StockD.missions
+      var story = window.StockD.story
+      var TOTAL_STORY = story.total
+
+      function $(id) { return document.getElementById(id) }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        })
+      }
+
+      function notify(message) {
+        if (typeof window.StockD.toast === 'function') window.StockD.toast(message)
+      }
+
+      function effectsOn() {
+        return document.body.dataset.effects !== 'off'
+      }
+
+      function openDialog(dialog) {
+        if (typeof dialog.showModal === 'function') dialog.showModal()
+        else dialog.setAttribute('open', '')
+      }
+
+      function closeDialog(dialog) {
+        if (typeof dialog.close === 'function') dialog.close()
+        else {
+          dialog.removeAttribute('open')
+          dialog.dispatchEvent(new Event('close'))
+        }
+      }
+
+      // ── 오늘의 미션 ───────────────────────
+      var STEP_INFO = {
+        opened: { desc: '대시보드·재고·주문 중 한 화면을 열면 기록됩니다. 재고나 주문 화면만 열어도 완료로 처리됩니다.', href: 'index.html', go: '대시보드 열기' },
+        inventory: { desc: '통합 재고 화면을 열면 기록됩니다. 화면이 불러오는 중이거나 오류·권한 없음 상태이면 기록하지 않습니다.', href: 'inventory.html', go: '재고 화면 열기' },
+        orders: { desc: '통합 주문 화면을 열면 기록됩니다. 화면이 불러오는 중이거나 오류·권한 없음 상태이면 기록하지 않습니다.', href: 'orders.html', go: '주문 화면 열기' }
+      }
+
+      function renderToday() {
+        var summary = missions.getTodaySummary()
+        $('todayDate').textContent = summary.date.replace(/-/g, '.')
+        $('todayDate').setAttribute('datetime', summary.date)
+        $('todayProgressText').textContent = '오늘 진행 ' + summary.done + '/' + summary.total
+        $('todayStorageText').textContent = missions.storageBlocked ? '현재 열기에서만 유지' : '이 브라우저에 기록'
+        var bar = $('todayProgress')
+        bar.value = summary.done
+        bar.setAttribute('aria-label', '오늘의 샘플 확인 미션 ' + summary.done + ' / ' + summary.total)
+        $('todayStatus').textContent = summary.done === summary.total
+          ? '오늘 화면 방문 기록을 마쳤어요. 완료 도장을 찍었습니다.'
+          : '남은 화면을 열면 방문이 기록되어 오늘 미션이 완료됩니다.'
+        $('storageNotice').hidden = !missions.storageBlocked
+
+        $('todaySteps').innerHTML = summary.steps.map(function (step) {
+          var info = STEP_INFO[step.id]
+          var state = step.done
+            ? '<span class="achievement achievement-earned">완료</span>'
+            : '<span class="achievement">확인 전</span>'
+          var link = '<a class="button button-quiet button-small" href="' + info.href + '">' +
+            (step.done ? '다시 열기' : info.go) + '</a>'
+          return '<li class="card-list-item">' +
+            '<div><strong>' + escapeHtml(step.label) + '</strong><p class="text-small text-muted">' + escapeHtml(info.desc) + '</p></div>' +
+            '<div class="cluster">' + state + link + '</div></li>'
+        }).join('')
+      }
+
+      function renderWeek() {
+        var week = missions.getWeek()
+        var completed = week.filter(function (day) { return day.stamped }).length
+        $('weekSummary').textContent = completed + '일 완료 · 쉬어도 기록은 유지돼요'
+        $('weekStamps').innerHTML = week.map(function (day) {
+          var label = day.stamped ? '완료' : (day.done > 0 ? day.done + '/3' : '')
+          var cls = 'stamp' + (day.stamped ? ' stamp-done' : (day.done > 0 ? ' stamp-partial' : '')) + (day.today ? ' stamp-today' : '')
+          var md = day.date.slice(5).replace('-', '/')
+          var spoken = (day.stamped ? '완료' : (day.done > 0 ? '3개 중 ' + day.done + '개' : '기록 없음')) + (day.today ? ' (오늘)' : '')
+          return '<li class="' + cls + '"><time datetime="' + day.date + '">' + md + '</time>' +
+            '<span class="stamp-mark" aria-hidden="true">' + label + '</span>' +
+            '<span class="sr-only">' + spoken + '</span></li>'
+        }).join('')
+      }
+
+      // ── 연재 이야기 ───────────────────────
+      var storyUI = { current: 1, returnSelector: '' }
+
+      function renderStory() {
+        var progress = missions.getStoryProgress()
+        var count = progress.unlocked
+        $('storyCount').textContent = '열린 이야기 ' + count + '/' + TOTAL_STORY + '컷'
+        $('storyGuide').textContent = count === TOTAL_STORY
+          ? '이야기 완결! 열린 15컷을 언제든 다시 읽어요.'
+          : (count > 0
+            ? '하루 미션 3개를 완료하면 다음 한 컷이 열려요. 같은 날에는 한 번만 열립니다.'
+            : '오늘 미션 3개를 마치면 첫 이야기가 열려요.')
+        var start = $('storyStart')
+        start.disabled = count === 0
+        start.textContent = count > 0 ? '이야기 읽기' : '첫 컷 기다리기'
+        $('storyStorageNote').textContent = '상자 친구의 허구 이야기입니다.' +
+          (missions.storageBlocked ? ' 저장할 수 없어 현재 열기에서만 진행이 유지됩니다.' : ' 이 브라우저에서 이어서 읽어요.')
+
+        $('storyEpisodes').innerHTML = story.episodes.map(function (episode) {
+          var items = story.cuts.filter(function (cut) { return cut.episode === episode.number }).map(function (cut) {
+            if (cut.index <= count) {
+              return '<li><button type="button" class="story-cut" data-story-index="' + cut.index + '" aria-label="' +
+                cut.index + '컷 ' + escapeHtml(cut.title) + ' · 열림">' + cut.index + '컷<span>열림</span></button></li>'
+            }
+            return '<li><button type="button" class="story-cut" disabled aria-label="' + cut.index + '컷 · 잠김">' +
+              cut.index + '컷<span>잠김</span></button></li>'
+          }).join('')
+          return '<div class="story-episode"><h3>' + episode.number + '편 · ' + escapeHtml(episode.title) + '</h3><ul class="story-cuts">' + items + '</ul></div>'
+        }).join('')
+      }
+
+      function renderCut() {
+        var count = missions.getStoryProgress().unlocked
+        var cut = story.cuts[storyUI.current - 1]
+        $('storyArt').innerHTML = cut.art
+        $('storyChapter').textContent = cut.episode + '편 · ' + cut.episodeTitle + ' · ' + cut.index + '/' + TOTAL_STORY + '컷'
+        $('storySceneTitle').textContent = cut.title
+        $('storySceneText').textContent = cut.text
+        $('storyDialogSub').textContent = '연재 이야기 · 허구 · 열린 ' + count + '/' + TOTAL_STORY + '컷'
+        $('storyPrev').disabled = storyUI.current <= 1
+        $('storyNext').disabled = storyUI.current >= count
+      }
+
+      function openStory(index, selector) {
+        var count = missions.getStoryProgress().unlocked
+        if (index < 1 || index > count) return
+        storyUI.current = index
+        storyUI.returnSelector = selector
+        missions.markStoryViewed(index)
+        renderCut()
+        openDialog($('storyDialog'))
+        $('storySceneTitle').focus()
+      }
+
+      function moveCut(delta, button) {
+        var count = missions.getStoryProgress().unlocked
+        var next = storyUI.current + delta
+        if (next < 1 || next > count) return
+        storyUI.current = next
+        missions.markStoryViewed(next)
+        renderCut()
+        // 눌렀던 버튼이 비활성이 되면 제목으로 초점 이동
+        if (button.disabled) $('storySceneTitle').focus()
+        else button.focus()
+      }
+
+      $('storyStart').addEventListener('click', function () {
+        var viewed = missions.getStoryProgress().lastViewed
+        openStory(viewed || 1, '#storyStart')
+      })
+
+      $('storyEpisodes').addEventListener('click', function (event) {
+        var button = event.target.closest ? event.target.closest('[data-story-index]') : null
+        if (!button || button.disabled) return
+        var index = Number(button.getAttribute('data-story-index'))
+        openStory(index, '[data-story-index="' + index + '"]')
+      })
+
+      $('storyPrev').addEventListener('click', function () { moveCut(-1, $('storyPrev')) })
+      $('storyNext').addEventListener('click', function () { moveCut(1, $('storyNext')) })
+
+      // ── 배지·샘플 연습 (이 페이지 안에서만 유지, 저장하지 않음) ──
+      var data = window.StockD.data || { mappings: [], inventory: [] }
+      var mappingItems = data.mappings.map(function (mapping) {
+        var item = data.inventory.filter(function (entry) { return entry.id === mapping.id })[0] || {}
+        return { id: mapping.id, candidates: mapping.candidates.slice(), chosen: mapping.chosen, item: item }
+      })
+      var practice = {
+        stock: false,
+        sync: false,
+        links: {},
+        selected: {},
+        badges: { firstLink: false, reviewRound: false },
+        newBadge: ''
+      }
+      mappingItems.forEach(function (entry) {
+        practice.links[entry.id] = null
+        practice.selected[entry.id] = entry.chosen
+      })
+
+      function linkedCount() {
+        return mappingItems.filter(function (entry) { return practice.links[entry.id] }).length
+      }
+
+      function allLinked() {
+        return mappingItems.length > 0 && linkedCount() === mappingItems.length
+      }
+
+      function practiceProgress() {
+        return (practice.stock ? 1 : 0) + (practice.sync ? 1 : 0) + (allLinked() ? 1 : 0)
+      }
+
+      // 공용 라벨 사전(mock-data.js)을 그대로 쓴다
+      var labels = window.StockD.data.labels
+      var CHANNEL_NAME = labels.channel
+      var FULFILL_NAME = labels.fulfillment
+      var ACCOUNT_NAME = labels.account
+
+      function renderBadges() {
+        var defs = [
+          { id: 'firstLink', label: '첫 연결 체험' },
+          { id: 'reviewRound', label: '세 옵션 연결 체험' }
+        ]
+        $('badgeList').innerHTML = defs.map(function (def) {
+          var earned = practice.badges[def.id]
+          var isNew = earned && practice.newBadge === def.id && effectsOn()
+          return '<span class="achievement' + (earned ? ' achievement-earned' : '') + (isNew ? ' is-new' : '') + '" data-badge="' + def.id + '">' +
+            def.label + ' · ' + (earned ? '획득' : '미획득') + '</span>'
+        }).join('')
+        practice.newBadge = ''
+      }
+
+      function renderPractice() {
+        var progress = practiceProgress()
+        $('practiceProgressText').textContent = '검토 진행 ' + progress + '/3'
+        $('practiceProgress').value = progress
+        $('practiceProgress').setAttribute('aria-label', '샘플 검토 진행 ' + progress + ' / 3')
+        $('practiceStatus').textContent = progress === 3
+          ? '샘플 미션을 모두 확인했어요. 실제 재고·조회 상태는 그대로예요.'
+          : (progress > 0 ? '진행을 기록했어요. 남은 사례도 확인해 보세요.' : '샘플 사례부터 하나씩 확인해 볼까요.')
+
+        function state(done, text) {
+          return '<span class="achievement' + (done ? ' achievement-earned' : '') + '">' + text + '</span>'
+        }
+
+        var mappingRows = mappingItems.map(function (entry) {
+          var item = entry.item
+          var linked = practice.links[entry.id]
+          var control = linked
+            ? '<strong class="sku">' + escapeHtml(linked) + '</strong>'
+            : '<div class="field"><label for="pick-' + entry.id + '">내부 SKU 후보</label><select id="pick-' + entry.id + '" data-pick="' + entry.id + '">' +
+              entry.candidates.map(function (sku) {
+                return '<option value="' + escapeHtml(sku) + '"' + (practice.selected[entry.id] === sku ? ' selected' : '') + '>' + escapeHtml(sku) + '</option>'
+              }).join('') + '</select></div>'
+          return '<li class="mapping-row">' +
+            '<div><strong>' + escapeHtml(item.name || entry.id) + '</strong> <span class="text-small text-muted">' + escapeHtml(item.option || '') + '</span>' +
+            '<div class="text-small text-muted"><span class="channel channel-' + escapeHtml(item.channel) + '">' + escapeHtml(CHANNEL_NAME[item.channel] || '') + '</span> ' +
+            escapeHtml(FULFILL_NAME[item.fulfillment] || '') + ' · ' + escapeHtml(ACCOUNT_NAME[item.channel] || '') + ' · <span class="sku">' + escapeHtml(item.externalId || '') + '</span></div></div>' +
+            control +
+            '<button type="button" class="button button-small' + (linked ? '' : ' button-primary') + '" data-map="' + entry.id + '">' +
+            (linked ? '샘플 연결 해제' : '샘플 연결 승인') + '</button></li>'
+        }).join('')
+
+        $('practiceList').innerHTML =
+          '<li class="card-list-item"><div><strong>① 부족·품절 사례를 검토합니다</strong><p class="text-small text-muted">로켓그로스 주문가능 재고 4개와 스마트스토어 정상 조회 0개를 비교해 보세요.</p></div>' +
+          '<div class="cluster">' + state(practice.stock, practice.stock ? '검토 기록됨' : '검토 전') +
+          '<button type="button" class="button button-small" data-case="stock">사례 보기</button></div></li>' +
+          '<li class="card-list-item"><div><strong>② 조회 상태 사례를 검토합니다</strong><p class="text-small text-muted">마지막 성공값 7개를 유지한 경우와 첫 조회 실패의 수량 —를 구분해 보세요.</p></div>' +
+          '<div class="cluster">' + state(practice.sync, practice.sync ? '검토 기록됨' : '검토 전') +
+          '<button type="button" class="button button-small" data-case="sync">사례 보기</button></div></li>' +
+          '<li class="card-list-item"><div><strong>③ 옵션 3개 연결을 체험합니다</strong><p class="text-small text-muted">' + linkedCount() + '/' + mappingItems.length + '개 샘플 연결 · 후보를 직접 확인한 뒤 승인합니다.</p></div>' +
+          '<div class="cluster">' + state(allLinked(), allLinked() ? '완료' : linkedCount() + '/' + mappingItems.length + ' 연결') + '</div>' +
+          '<ul class="mapping-practice" aria-label="옵션 연결 체험">' + mappingRows + '</ul></li>'
+      }
+
+      function renderPracticeAll(focusSelector) {
+        renderPractice()
+        renderBadges()
+        if (focusSelector) {
+          var target = document.querySelector(focusSelector)
+          if (target) target.focus()
+        }
+      }
+
+      // 연결 승인·해제 (이 페이지 안에서만)
+      $('practiceList').addEventListener('change', function (event) {
+        var id = event.target.getAttribute && event.target.getAttribute('data-pick')
+        if (id) practice.selected[id] = event.target.value
+      })
+
+      $('practiceList').addEventListener('click', function (event) {
+        var target = event.target.closest ? event.target.closest('button') : null
+        if (!target) return
+        var caseId = target.getAttribute('data-case')
+        if (caseId) {
+          openCase(caseId, target)
+          return
+        }
+        var id = target.getAttribute('data-map')
+        if (!id) return
+        if (practice.links[id]) {
+          practice.links[id] = null
+          renderPracticeAll('[data-map="' + id + '"]')
+          notify('샘플 연결을 해제했습니다. 연결 연습 진행도 함께 바뀌며, 이미 얻은 배지는 유지됩니다.')
+          return
+        }
+        var wasFirst = practice.badges.firstLink
+        var wasRound = practice.badges.reviewRound
+        practice.links[id] = practice.selected[id]
+        practice.badges.firstLink = true
+        if (allLinked()) practice.badges.reviewRound = true
+        if (!wasFirst) practice.newBadge = 'firstLink'
+        if (!wasRound && practice.badges.reviewRound) practice.newBadge = 'reviewRound'
+        renderPracticeAll('[data-map="' + id + '"]')
+        notify('샘플 연결 ' + linkedCount() + '/' + mappingItems.length + '개 · 이 페이지에서만 유지됩니다.')
+      })
+
+      // 사례 검토 대화상자
+      var CASES = {
+        stock: {
+          title: '부족·품절 사례 검토',
+          cards: [
+            { head: '로켓그로스 · 코튼 파우치', text: '주문가능 재고 의미를 확인합니다.', number: '4', cls: 'number-low', label: '부족 예시 · 창고 보유량과 합산하지 않음' },
+            { head: '스마트스토어 · 데일리 머그', text: '정상 조회에서 수량 0을 품절로 구분합니다.', number: '0', cls: 'number-zero', label: '품절 예시 · 조회 실패와 다름' }
+          ],
+          note: '검토 기록은 진행만 바꿉니다. 재고와 실제 연결 상태는 바뀌지 않습니다.',
+          record: '부족·품절 검토 기록',
+          done: '부족·품절 사례의 샘플 검토를 기록했습니다. 상태는 그대로입니다.'
+        },
+        sync: {
+          title: '조회 상태 사례 검토',
+          cards: [
+            { head: '쿠팡 판매자배송 · 데일리 머그', text: '마지막 성공값을 보존한 상태입니다.', number: '7', cls: '', label: '마지막 성공 09:02 · 최근 조회 실패 09:39' },
+            { head: '로켓그로스 · 접이식 보관함', text: '첫 조회 실패는 수량 0이 아닙니다.', number: '—', cls: 'number-none', label: '이전 성공값 없음 · 조회 실패' }
+          ],
+          note: '검토 기록은 오류를 해결하지 않습니다. 수집 상태는 그대로 남습니다.',
+          record: '조회 상태 검토 기록',
+          done: '조회 상태 사례의 샘플 검토를 기록했습니다. 상태는 그대로입니다.'
+        }
+      }
+      var caseUI = { id: '', returnSelector: '' }
+
+      function openCase(id, trigger) {
+        var def = CASES[id]
+        caseUI.id = id
+        caseUI.returnSelector = '[data-case="' + id + '"]'
+        $('caseDialogTitle').textContent = def.title
+        $('caseBody').innerHTML = def.cards.map(function (card) {
+          return '<div class="case-card"><strong>' + escapeHtml(card.head) + '</strong><p class="text-small text-muted">' + escapeHtml(card.text) + '</p>' +
+            '<span class="case-number number ' + card.cls + '">' + escapeHtml(card.number) + '</span><span class="text-small text-muted">' + escapeHtml(card.label) + '</span></div>'
+        }).join('')
+        $('caseNote').textContent = def.note
+        $('caseRecord').textContent = def.record
+        openDialog($('caseDialog'))
+      }
+
+      $('caseRecord').addEventListener('click', function () {
+        var id = caseUI.id
+        if (!id || practice[id]) {
+          closeDialog($('caseDialog'))
+          return
+        }
+        practice[id] = true
+        closeDialog($('caseDialog'))
+        renderPracticeAll(caseUI.returnSelector)
+        notify(CASES[id].done)
+      })
+
+      // 대화상자 공통: 닫기 버튼, 배경 클릭, 닫힌 뒤 초점 복귀
+      function bindDialog(dialog, kind, getReturnSelector, afterClose) {
+        dialog.addEventListener('click', function (event) {
+          if (event.target === dialog) closeDialog(dialog)
+        })
+        dialog.querySelector('[data-close="' + kind + '"]').addEventListener('click', function () { closeDialog(dialog) })
+        dialog.addEventListener('close', function () {
+          if (afterClose) afterClose()
+          var selector = getReturnSelector()
+          var target = selector ? document.querySelector(selector) : null
+          if (target && !target.disabled) target.focus()
+        })
+      }
+
+      bindDialog($('storyDialog'), 'story', function () { return storyUI.returnSelector }, renderStory)
+      bindDialog($('caseDialog'), 'case', function () { return caseUI.returnSelector }, null)
+
+      // 다른 탭 기록·날짜 변경 반영 (이야기 읽기 중에는 목록 갱신을 닫은 뒤로 미룸)
+      document.addEventListener('stockd:missions-changed', function () {
+        renderToday()
+        renderWeek()
+        if (!$('storyDialog').open) renderStory()
+      })
+
+      renderToday()
+      renderWeek()
+      renderStory()
+      renderPracticeAll()
+    })()
+  </script>
+</body>
+</html>

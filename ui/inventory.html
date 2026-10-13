@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>통합 재고 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="inventory">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>통합 재고</h1>
+        <p>옵션별 수량, 수량의 의미와 마지막 확인 시각을 함께 봅니다.</p>
+      </div>
+    </div>
+
+    <div class="notice notice-info" role="note">
+      <p><strong>수량의 의미를 따로 봅니다.</strong> 스마트스토어·쿠팡 판매자배송은 채널 등록 재고, 로켓그로스는 주문가능 재고입니다. 채널 수량을 합산하지 않습니다.</p>
+    </div>
+
+    <section class="card card-flush" aria-label="재고 목록">
+      <div id="inventory-table"></div>
+    </section>
+
+    <dialog id="inventory-dialog"></dialog>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/table.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var StockD = window.StockD
+      var labels = StockD.data.labels
+      var threshold = StockD.data.meta.defaultThreshold
+      var esc = StockD.table.escapeHtml
+      var fmt = StockD.format
+
+      // 묶음 상태 필터: 대시보드 카드 숫자와 같은 기준 (stock/sync/unavailable)
+      var STATE_GROUPS = {
+        stock: ['zero', 'low'],
+        sync: ['failed', 'stale'],
+        unavailable: ['unsupported', 'unmanaged', 'unverified']
+      }
+
+      // attention: stock + sync + SKU 미연결의 합집합 (알림 링크용)
+      function isAttention(item) {
+        return STATE_GROUPS.stock.indexOf(item.state) >= 0 ||
+          STATE_GROUPS.sync.indexOf(item.state) >= 0 ||
+          item.sku === null
+      }
+
+      function badge(state) {
+        return '<span class="badge badge-' + esc(state) + '">' + esc(labels.state[state]) + '</span>'
+      }
+
+      function channelHtml(item) {
+        return '<span class="channel channel-' + esc(item.channel) + '">' + esc(labels.channel[item.channel]) + '</span>'
+      }
+
+      function skuHtml(item) {
+        if (item.sku === null) {
+          return '<span class="badge badge-neutral">SKU 미연결</span>'
+        }
+        return '<span class="sku">' + esc(item.sku) + '</span>'
+      }
+
+      // 수량: 실패·미지원·미확인은 '—' (0으로 바꾸지 않음)
+      function quantityHtml(item) {
+        var text = fmt.formatQuantity(item)
+        var cls = fmt.quantityClass(item, threshold)
+        var aria = text === '—' ? ' aria-label="수량 없음"' : ''
+        return '<span class="number ' + esc(cls) + '"' + aria + '>' + esc(text) + '</span>'
+      }
+
+      function statusHtml(item) {
+        var note = ''
+        if (item.state === 'stale') note = '<span class="secondary">이전 수량 유지 · 최근 조회 실패</span>'
+        if (item.state === 'failed') note = '<span class="secondary">이전 성공값 없음</span>'
+        return badge(item.state) + note
+      }
+
+      function lastSuccessHtml(item) {
+        var text = item.lastSuccess ? fmt.formatDateTime(item.lastSuccess) : '성공 이력 없음'
+        return '<span class="timestamp">' + esc(text) + '</span>'
+      }
+
+      function accountOf(item) {
+        return labels.account[item.channel]
+      }
+
+      function openInventoryDetail(item, trigger) {
+        var staleLike = item.state === 'stale' || item.state === 'failed'
+        var resultText = staleLike ? '조회 실패 · 원인 확인 필요 (가상 오류)' : labels.state[item.state]
+        var body =
+          '<div class="stack">' +
+          '<p><strong>' + esc(fmt.quantityKind(item)) + '</strong> ' +
+          '<span class="secondary">' + esc(labels.channel[item.channel]) + ' / ' + esc(labels.fulfillment[item.fulfillment]) + '</span> ' +
+          badge(item.state) + '</p>' +
+          '<p>수량 ' + quantityHtml(item) + '</p>' +
+          '<dl class="key-value">' +
+          '<dt>내부 SKU</dt><dd>' + (item.sku === null ? '미연결 · 상품 연결에서 후보 확인' : esc(item.sku)) + '</dd>' +
+          '<dt>샘플 계정</dt><dd>' + esc(accountOf(item)) + '</dd>' +
+          '<dt>원본 식별자</dt><dd><span class="sku">' + esc(item.externalId) + '</span></dd>' +
+          '<dt>마지막 성공</dt><dd>' + (item.lastSuccess ? esc(fmt.formatDateTime(item.lastSuccess)) : '없음 · 수량 확인 전') + '</dd>' +
+          '<dt>마지막 시도</dt><dd>' + esc(fmt.formatDateTime(item.lastAttempt)) + '</dd>' +
+          '<dt>최근 조회 결과</dt><dd>' + esc(resultText) + '</dd>' +
+          '<dt>데이터 출처</dt><dd>가상 샘플 · 실제 계정 응답 아님</dd>' +
+          '</dl>' +
+          '<div class="notice ' + (staleLike ? 'notice-warn' : 'notice-info') + '" role="note"><p>' + esc(item.detail) + '</p></div>' +
+          '<p class="text-muted text-small">채널별 수량을 실제 창고 보유량으로 합산하지 않습니다. 판매수량은 재고에 반영하지 않습니다.</p>' +
+          '</div>'
+        var html = StockD.table.buildDialogHtml({
+          title: item.name,
+          subtitle: item.option + ' · 샘플 데이터 · 실제 API 미연동',
+          bodyHtml: body
+        })
+        StockD.table.openDetail(document.getElementById('inventory-dialog'), html, trigger)
+      }
+
+      // 묶음 옵션을 먼저 두고, 그 뒤에 상태 8종을 개별 선택지로 둔다
+      var statusOptions = [
+        { value: 'attention', label: '확인 필요 전체 (품절·부족 + 조회 실패·지연 + SKU 미연결)' },
+        { value: 'stock', label: '품절·부족' },
+        { value: 'sync', label: '조회 실패·지연' },
+        { value: 'unavailable', label: '미지원·관리 미사용·지원 미확인' }
+      ]
+      Object.keys(labels.state).forEach(function (key) {
+        statusOptions.push({ value: key, label: labels.state[key] })
+      })
+
+      StockD.table.createFilterableTable({
+        container: document.getElementById('inventory-table'),
+        pageName: 'inventory',
+        idPrefix: 'inventory',
+        filterLabel: '재고 필터',
+        tableLabel: '통합 재고 표',
+        minWidth: '1040px',
+        rows: function () { return StockD.state.inventory },
+        search: {
+          id: 'search',
+          label: '검색',
+          placeholder: '상품명, 옵션, 내부 SKU 검색',
+          text: function (row) { return row.name + ' ' + row.option + ' ' + (row.sku || '') }
+        },
+        filters: [
+          {
+            id: 'channel',
+            label: '쇼핑몰',
+            allLabel: '전체 쇼핑몰',
+            options: [
+              { value: 'naver', label: labels.channel.naver },
+              { value: 'coupang', label: labels.channel.coupang }
+            ],
+            match: function (row, value) { return row.channel === value }
+          },
+          {
+            id: 'fulfillment',
+            label: '배송 방식',
+            allLabel: '전체 배송 방식',
+            options: [
+              { value: 'seller', label: labels.fulfillment.seller },
+              { value: 'rocket', label: labels.fulfillment.rocket }
+            ],
+            match: function (row, value) { return row.fulfillment === value }
+          },
+          {
+            id: 'status',
+            label: '조회·재고 상태',
+            allLabel: '전체 상태',
+            options: statusOptions,
+            match: function (row, value) {
+              if (value === 'attention') return isAttention(row)
+              if (STATE_GROUPS[value]) return STATE_GROUPS[value].indexOf(row.state) >= 0
+              return row.state === value
+            }
+          }
+        ],
+        columns: [
+          {
+            key: 'name',
+            label: '옵션',
+            title: true,
+            render: function (row) {
+              return '<strong>' + esc(row.name) + '</strong><span class="secondary">' + esc(row.option) + '</span>'
+            }
+          },
+          { key: 'sku', label: '내부 SKU', render: skuHtml },
+          {
+            key: 'channel',
+            label: '채널·계정',
+            render: function (row) {
+              return channelHtml(row) + '<span class="secondary">' + esc(accountOf(row)) + ' / ' + esc(labels.fulfillment[row.fulfillment]) + '</span>'
+            }
+          },
+          {
+            key: 'kind',
+            label: '수량 종류',
+            render: function (row) { return esc(fmt.quantityKind(row)) }
+          },
+          { key: 'quantity', label: '수량', align: 'right', render: quantityHtml },
+          { key: 'state', label: '조회 상태', render: statusHtml },
+          {
+            key: 'lastSuccess',
+            label: '마지막 성공 시각',
+            detail: true,
+            render: function (row) {
+              return lastSuccessHtml(row) + '<span class="secondary">시도 ' + esc(fmt.formatDateTime(row.lastAttempt)) + '</span>'
+            }
+          }
+        ],
+        onRowClick: openInventoryDetail,
+        actionLabel: '상세',
+        actionAriaLabel: function (row) {
+          return row.name + ' ' + row.option + ' ' + labels.channel[row.channel] + ' ' + labels.fulfillment[row.fulfillment] + ' 상세 보기'
+        },
+        summaryLabel: function (count, total) { return '샘플 옵션 ' + count + '개 / 전체 ' + total + '개' },
+        summaryHint: '행을 선택하면 원본 식별자·최근 시도·상태 설명을 볼 수 있습니다.',
+        emptyMessage: {
+          title: '조건에 맞는 샘플이 없습니다',
+          text: '검색어나 필터를 바꿔 보세요. 이 결과는 API 조회 실패가 아닙니다.'
+        },
+        footnote: '정상 조회 0은 품절입니다. 오류·미지원·관리 미사용·미확인의 수량은 0으로 바꾸지 않습니다. 시각은 모두 2026.10.04의 가상 예시입니다.'
+      })
+    })()
+  </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>대시보드 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="dashboard">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>오늘 확인할 일</h1>
+        <p>아래 숫자는 가상 샘플 데이터 기준이며, 실제 쇼핑몰 조회 결과가 아닙니다.</p>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="attention-title">
+      <h2 id="attention-title" class="sr-only">확인 필요 요약</h2>
+      <div id="attention-cards" class="grid grid-4"></div>
+    </section>
+
+    <section class="card section" aria-labelledby="channels-title">
+      <div class="card-header">
+        <div>
+          <h2 id="channels-title">연결 상태</h2>
+          <p>세 채널 모두 실제 연결 전입니다. 마지막 성공 시각이 없으면 —로 표시합니다.</p>
+        </div>
+        <a class="button button-quiet" href="settings.html">연결·설정 보기</a>
+      </div>
+      <ul id="channel-list" class="card-list"></ul>
+    </section>
+
+    <section class="card card-flush section" aria-labelledby="compare-title">
+      <div class="card-header">
+        <div>
+          <h2 id="compare-title">SKU별 채널 재고 비교</h2>
+          <p>수량 종류가 서로 달라 합산하지 않습니다. 조회 실패·미지원은 —로 표시합니다.</p>
+        </div>
+        <a class="button button-quiet" href="inventory.html">통합 재고 보기</a>
+      </div>
+      <div id="compare-table"></div>
+    </section>
+
+    <section class="card section" aria-labelledby="alerts-title">
+      <div class="card-header">
+        <div>
+          <h2 id="alerts-title">최근 알림</h2>
+          <p>샘플 알림 중 최신 3건입니다.</p>
+        </div>
+        <a class="button button-quiet" href="alerts.html">알림 전체 보기</a>
+      </div>
+      <ul id="recent-alerts" class="card-list"></ul>
+    </section>
+
+    <section class="section" aria-labelledby="daily-title">
+      <h2 id="daily-title" class="sr-only">매일 확인 요약</h2>
+      <div id="daily-summary" class="daily-summary"></div>
+      <p class="text-muted text-small">매일 확인은 이 브라우저의 화면 방문 기록일 뿐이며, 재고 점검이나 API 정상 여부를 뜻하지 않습니다.</p>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/table.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var StockD = window.StockD
+      var labels = StockD.data.labels
+      var threshold = StockD.data.meta.defaultThreshold
+      var esc = StockD.table.escapeHtml
+      var fmt = StockD.format
+
+      // 비교 표에 보여줄 SKU 4개
+      var COMPARE_SKUS = ['BAG-NT-S', 'MUG-IV-320', 'BOX-GR-M', 'TAPE-IV-01']
+      // 비교 표 열: 채널·배송 방식 조합
+      var COLUMNS = [
+        { channel: 'naver', fulfillment: 'seller', label: '네이버' },
+        { channel: 'coupang', fulfillment: 'seller', label: '쿠팡 판매자배송' },
+        { channel: 'coupang', fulfillment: 'rocket', label: '쿠팡 로켓그로스' }
+      ]
+
+      function badge(state) {
+        return '<span class="badge badge-' + esc(state) + '">' + esc(labels.state[state]) + '</span>'
+      }
+
+      function channelHtml(channel, text) {
+        return '<span class="channel channel-' + esc(channel) + '">' + esc(text) + '</span>'
+      }
+
+      // 1) 확인 필요 요약 카드
+      function renderCards() {
+        var s = StockD.summary()
+        var cards = [
+          { tone: 'danger', label: '품절·부족', value: s.zeroOrLow, href: 'inventory.html?status=stock', hint: '샘플 기준 · 재고 보기' },
+          { tone: 'warn', label: '조회 실패·지연', value: s.failedOrStale, href: 'inventory.html?status=sync', hint: '샘플 기준 · 재고 보기' },
+          { tone: 'warn', label: '미연결 옵션', value: s.unlinked, href: 'mappings.html', hint: '샘플 기준 · 상품 연결 보기' },
+          { tone: 'neutral', label: '미지원·관리 미사용·지원 미확인', value: s.unavailable, href: 'inventory.html?status=unavailable', hint: '샘플 기준 · 재고 보기' }
+        ]
+        document.getElementById('attention-cards').innerHTML = cards.map(function (c) {
+          return '<a class="stat-card stat-card-' + c.tone + '" href="' + c.href + '">' +
+            '<span class="stat-card-label">' + esc(c.label) + '</span>' +
+            '<strong class="stat-card-value">' + c.value + '<small>건</small></strong>' +
+            '<span class="stat-card-hint">' + esc(c.hint) + '</span></a>'
+        }).join('')
+      }
+
+      // 2) 연결 상태
+      function renderChannels() {
+        document.getElementById('channel-list').innerHTML = StockD.data.channels.map(function (ch) {
+          var last = ch.lastSuccess ? fmt.formatDateTime(ch.lastSuccess) : '—'
+          return '<li class="card-list-item">' +
+            '<div>' + channelHtml(ch.channel, ch.label) + '<span class="secondary">' + esc(ch.account) + '</span></div>' +
+            '<div class="cluster"><span class="badge badge-neutral">' + esc(ch.status) + '</span>' +
+            '<span class="secondary">마지막 성공 <span class="timestamp">' + esc(last) + '</span></span>' +
+            '<a class="button button-quiet button-small" href="settings.html">설정 보기<span class="sr-only"> (' + esc(ch.label) + ')</span></a></div>' +
+            '</li>'
+        }).join('')
+      }
+
+      // 3) SKU별 채널 재고 비교 (합계 열 없음)
+      function findItem(sku, col) {
+        var list = StockD.state.inventory.filter(function (item) {
+          return item.sku === sku && item.channel === col.channel && item.fulfillment === col.fulfillment
+        })
+        return list.length ? list[0] : null
+      }
+
+      function cellHtml(item) {
+        // 내부 SKU로 연결된 옵션이 없는 칸: 옵션이 없다는 뜻이 아니라 연결 전이라는 뜻
+        if (!item) {
+          return '<span class="secondary">연결된 옵션 없음</span>' +
+            '<span class="number number-none" aria-label="수량 없음">—</span>' +
+            '<a class="link-target text-small" href="mappings.html">상품 연결 보기</a>'
+        }
+        var text = fmt.formatQuantity(item)
+        var cls = fmt.quantityClass(item, threshold)
+        var aria = text === '—' ? ' aria-label="수량 없음"' : ''
+        return '<span class="secondary">' + esc(fmt.quantityKind(item)) + '</span>' +
+          '<span class="number ' + esc(cls) + '"' + aria + '>' + esc(text) + '</span> ' + badge(item.state)
+      }
+
+      function renderCompare() {
+        var rows = COMPARE_SKUS.map(function (sku) {
+          var first = StockD.state.inventory.filter(function (item) { return item.sku === sku })[0]
+          var name = first ? first.name : '—'
+          var option = first ? first.option : ''
+          var tds = COLUMNS.map(function (col) {
+            return '<td data-label="' + esc(col.label) + '">' + cellHtml(findItem(sku, col)) + '</td>'
+          }).join('')
+          return '<tr><td class="cell-title" data-label="SKU·상품"><span class="sku">' + esc(sku) + '</span>' +
+            '<strong>' + esc(name) + '</strong><span class="secondary">' + esc(option) + '</span></td>' + tds + '</tr>'
+        }).join('')
+        var heads = COLUMNS.map(function (col) { return '<th scope="col">' + esc(col.label) + '</th>' }).join('')
+        document.getElementById('compare-table').innerHTML =
+          '<div class="table-scroll" role="region" tabindex="0" aria-label="SKU별 채널 재고 비교 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:760px">' +
+          '<table class="table responsive-table"><thead><tr><th scope="col">SKU·상품</th>' + heads + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+      }
+
+      // 4) 최근 알림 3건 (최신순)
+      function toMinutes(time) {
+        var parts = String(time).split(':')
+        return Number(parts[0]) * 60 + Number(parts[1] || 0)
+      }
+
+      function renderAlerts() {
+        var sorted = StockD.state.alerts.slice().sort(function (a, b) { return toMinutes(b.time) - toMinutes(a.time) })
+        document.getElementById('recent-alerts').innerHTML = sorted.slice(0, 3).map(function (a) {
+          return '<li class="card-list-item"><div><strong>' + esc(a.title) + '</strong>' +
+            '<span class="secondary">' + esc(a.description) + '</span></div>' +
+            '<div class="cluster"><span class="badge badge-sample">' + esc(labels.alertType[a.type]) + '</span>' +
+            '<span class="timestamp">' + esc(fmt.formatDateTime(a.time)) + '</span></div></li>'
+        }).join('')
+      }
+
+      // 5) 매일 확인 한 줄 요약 (미션 변경 시 갱신)
+      function renderDaily() {
+        var el = document.getElementById('daily-summary')
+        var today = StockD.missions.getTodaySummary()
+        var story = StockD.missions.getStoryProgress()
+        el.innerHTML =
+          '<div style="flex:1 1 220px"><div class="progress-label"><strong>오늘 ' + today.done + '/' + today.total + '</strong>' +
+          '<span>이야기 열린 컷 ' + story.unlocked + '/' + story.total + '</span></div>' +
+          '<progress class="progress" max="' + today.total + '" value="' + today.done + '" aria-label="오늘의 확인 ' + today.done + ' / ' + today.total + '"></progress></div>' +
+          '<a class="button button-quiet button-small" href="missions.html">매일 확인 보기</a>'
+      }
+
+      renderCards()
+      renderChannels()
+      renderCompare()
+      renderAlerts()
+      renderDaily()
+      document.addEventListener('stockd:missions-changed', renderDaily)
+    })()
+  </script>
+</body>
+</html>

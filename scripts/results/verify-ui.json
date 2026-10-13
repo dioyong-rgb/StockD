@@ -1,0 +1,532 @@
+{
+  "checkedAt": "2026-10-12T07:18:45.565Z",
+  "total": 83,
+  "pass": 83,
+  "fail": 0,
+  "environment": {
+    "node": "v24.12.0",
+    "os": "win32 10.0.26200",
+    "playwrightVia": "fallback C:\\Users\\dioyongPC\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\node_modules\\playwright",
+    "playwrightVersion": "1.62.1",
+    "browser": "chromium 151.0.7922.34",
+    "browserVia": "playwright 기본 브라우저",
+    "browserLaunchFailures": [],
+    "serverOrigin": "http://127.0.0.1:52829"
+  },
+  "screenshots": [
+    "scripts/results/ui-index-360.png",
+    "scripts/results/ui-index-768.png",
+    "scripts/results/ui-index-1440.png",
+    "scripts/results/ui-inventory-360.png",
+    "scripts/results/ui-inventory-768.png",
+    "scripts/results/ui-inventory-1440.png",
+    "scripts/results/ui-orders-360.png",
+    "scripts/results/ui-orders-768.png",
+    "scripts/results/ui-orders-1440.png",
+    "scripts/results/ui-missions-360.png",
+    "scripts/results/ui-missions-768.png",
+    "scripts/results/ui-missions-1440.png",
+    "scripts/results/ui-orders-360-cards.png",
+    "scripts/results/ui-mappings-360-cards.png"
+  ],
+  "results": [
+    {
+      "group": "1 로드·오류",
+      "name": "index.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "inventory.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "orders.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "mappings.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "alerts.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "settings.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 7건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "missions.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 8건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "login.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "states.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "about.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "help.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "terms.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "privacy.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "1 로드·오류",
+      "name": "404.html 로드·콘솔·요청",
+      "status": "pass",
+      "evidence": "HTTP 200, 요청 6건, 오류 0, 외부 0"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "index.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "inventory.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "orders.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "mappings.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "alerts.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "settings.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "missions.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "login.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "states.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "about.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "help.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "terms.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "privacy.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "404.html 샘플 띠와 카피라이트",
+      "status": "pass",
+      "evidence": "띠 \"샘플 데이터 · 실제 API 미연동\", 푸터 \"© 2026 [회사명 입력 필요]\" 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "terms.html 법무 검토 전 샘플 문구",
+      "status": "pass",
+      "evidence": "문구 확인"
+    },
+    {
+      "group": "2 샘플 띠·푸터",
+      "name": "privacy.html 법무 검토 전 샘플 문구",
+      "status": "pass",
+      "evidence": "문구 확인"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "사이드바 메뉴 7개: 링크 목록과 aria-current (페이지별)",
+      "status": "pass",
+      "evidence": "7개 페이지 모두 메뉴 7개·현재 페이지 1개 표시"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "사이드바 메뉴 클릭 이동 (회사 소개 페이지에서 7개 모두)",
+      "status": "pass",
+      "evidence": "7개 모두 이동·aria-current 정확"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "공통 페이지에서는 사이드바 활성 메뉴 없음",
+      "status": "pass",
+      "evidence": "5개 공통 페이지 모두 활성 메뉴 없음"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "푸터 링크 4개 클릭 이동",
+      "status": "pass",
+      "evidence": "푸터 4개 링크 이동·h1 확인"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "상단바 도움말 링크 이동",
+      "status": "pass",
+      "evidence": "help.html 이동"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "사용자 메뉴에서 로그인 화면 이동",
+      "status": "pass",
+      "evidence": "login.html 이동 (사용자 메뉴 패널 0개 -> 이동 후 0 예상)"
+    },
+    {
+      "group": "3 메뉴·링크",
+      "name": "모든 페이지의 내부 링크가 존재하는 파일(HTTP 200)",
+      "status": "pass",
+      "evidence": "고유 내부 링크 28개 모두 200, 해시 링크 30개 대상 존재"
+    },
+    {
+      "group": "4 반응형",
+      "name": "360px 14페이지 문서 가로 스크롤 없음",
+      "status": "pass",
+      "evidence": "14페이지 모두 scrollWidth<=clientWidth, 스크린샷 4장 저장"
+    },
+    {
+      "group": "4 반응형",
+      "name": "768px 14페이지 문서 가로 스크롤 없음",
+      "status": "pass",
+      "evidence": "14페이지 모두 scrollWidth<=clientWidth, 스크린샷 4장 저장"
+    },
+    {
+      "group": "4 반응형",
+      "name": "1440px 14페이지 문서 가로 스크롤 없음",
+      "status": "pass",
+      "evidence": "14페이지 모두 scrollWidth<=clientWidth, 스크린샷 4장 저장"
+    },
+    {
+      "group": "4 반응형",
+      "name": "960px 미만은 상단 가로 메뉴, 이상은 좌측 사이드바",
+      "status": "pass",
+      "evidence": "360:가로메뉴, 768:가로메뉴, 959:가로메뉴, 960:세로메뉴, 1440:세로메뉴"
+    },
+    {
+      "group": "5 쓰기·비밀값 금지",
+      "name": "input[type=password] 는 login 에만",
+      "status": "pass",
+      "evidence": "login 1개, 나머지 13페이지 0개"
+    },
+    {
+      "group": "5 쓰기·비밀값 금지",
+      "name": "API 키·토큰·시크릿 입력창 없음 (name/id/placeholder/label)",
+      "status": "pass",
+      "evidence": "입력창 25개 검사, 해당 없음"
+    },
+    {
+      "group": "5 쓰기·비밀값 금지",
+      "name": "쓰기 문구('재고 수정|발송 처리|주문 상태 변경|발주 확인|취소 승인')가 버튼·링크 텍스트에 없음",
+      "status": "pass",
+      "evidence": "버튼·링크 358개 검사, 해당 없음"
+    },
+    {
+      "group": "5 쓰기·비밀값 금지",
+      "name": "외부 링크(http/https href·src) 0",
+      "status": "pass",
+      "evidence": "14페이지 외부 참조 0"
+    },
+    {
+      "group": "6 재고 불변조건",
+      "name": "inventory 표 수량 칸: 실패·미지원·미확인·관리 미사용은 —, 품절만 0",
+      "status": "pass",
+      "evidence": "n1:normal=18 c1:normal=12 r1:low=4 n2:zero=0 c2:stale=7 r2:failed=— n3:unmanaged=— n4:unsupported=— c3:unverified=— n5:low=3"
+    },
+    {
+      "group": "6 재고 불변조건",
+      "name": "대시보드 비교 표에 합계/총합 열 없음, 실패·미지원 칸은 —",
+      "status": "pass",
+      "evidence": "머리글=SKU·상품|네이버|쿠팡 판매자배송|쿠팡 로켓그로스 / 수량칸=18,12,4,0,—,—,—,—,—,—,—,—"
+    },
+    {
+      "group": "6 재고 불변조건",
+      "name": "orders 로켓그로스 클레임 칸이 \"지원 미확인\"",
+      "status": "pass",
+      "evidence": "로켓그로스 1행: 지원 미확인클레임 없음이 아닙니다"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "inventory 검색·쇼핑몰·상태 필터 건수 변화와 초기화",
+      "status": "pass",
+      "evidence": "전체 10 -> 검색 2 -> 쇼핑몰 5 -> +상태 1 -> 초기화 10"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "inventory 상세 열기 -> Escape -> 초점이 열었던 버튼으로 복귀 (키보드·클릭)",
+      "status": "pass",
+      "evidence": "첫·마지막 행 x (키보드·클릭) 4회 모두 Escape 닫힘·초점 복귀"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "orders 상세 열기 -> Escape -> 초점이 열었던 버튼으로 복귀 (키보드·클릭)",
+      "status": "pass",
+      "evidence": "첫·마지막 행 x (키보드·클릭) 4회 모두 Escape 닫힘·초점 복귀"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "orders 기간 시작>종료 시 안내, 정상 범위로 복귀",
+      "status": "pass",
+      "evidence": "기본 6건 -> 잘못된 범위 0건+안내 -> 정상 범위 6건"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "inventory ?state= 6종 각각 상태 카드 표시",
+      "status": "pass",
+      "evidence": "loading,empty,error,stale,partial,unauthorized 모두 카드 표시"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "orders ?state= 6종 각각 상태 카드 표시",
+      "status": "pass",
+      "evidence": "loading,empty,error,stale,partial,unauthorized 모두 카드 표시"
+    },
+    {
+      "group": "7 필터·상세",
+      "name": "states.html 의 재현 링크 12개 전부 클릭 이동 후 상태 카드 표시",
+      "status": "pass",
+      "evidence": "링크 요소 24개 / 고유 12개 클릭 이동·카드 확인"
+    },
+    {
+      "group": "8 연결·알림",
+      "name": "mappings: 후보 선택 전 적용 비활성 -> 적용 -> 이력 추가 -> 해제",
+      "status": "pass",
+      "evidence": "적용 버튼 3개 모두 선택 전 비활성; 이력 2 -> 3 -> 4; 미연결 3개 -> 미연결 2개"
+    },
+    {
+      "group": "8 연결·알림",
+      "name": "alerts: 개별 확인 -> 전체 확인",
+      "status": "pass",
+      "evidence": "미확인 5 -> 4 -> 0, 전체 5 유지 (전체 탭 항목 요소 5)"
+    },
+    {
+      "group": "9 매일 확인",
+      "name": "KST 날짜 고정: 열기 -> 재고 -> 주문 -> 매일 확인 3/3·스탬프·컷 1",
+      "status": "pass",
+      "evidence": "index=1 | inventory=2 | orders=3 | missions=\"오늘 진행 3/3\", \"열린 이야기 1/15컷\", 스탬프=1, 열린 컷=1 | 재방문=3, 컷=1 | 다음 날 missions=\"오늘 진행 0/3\", 컷=1 | 다음 날 index=1 (2026-10-05)"
+    },
+    {
+      "group": "9 매일 확인",
+      "name": "settings '일일 기록 삭제' 후 이야기 유지, '샘플 초기화' 후 일일 기록 유지",
+      "status": "pass",
+      "evidence": "준비 오늘=3, 컷=1 | 일일 기록 삭제 후 오늘=1, 컷=1 | 재완료 오늘=3, 컷=1 | 샘플 초기화 후 오늘=3, 컷=1"
+    },
+    {
+      "group": "9 매일 확인",
+      "name": "저장 차단(localStorage 접근 예외) 시 14페이지 오류 없음, missions 안내 표시",
+      "status": "pass",
+      "evidence": "두 방식 모두 14페이지 pageerror 0, 콘솔 error 0; 접근 예외 안내=\"이 브라우저에 저장할 수 없습니다. 기록과 이야기 진행\" / \"현재 열기에서만 유지\"; 쓰기 예외 안내=\"이 브라우저에 저장할 수 없습니다. 기록과 이야기 진행\" / \"현재 열기에서만 유지\""
+    },
+    {
+      "group": "10 로그인",
+      "name": "제출 시 요청 0, 입력값 미저장·미출력, 인증 미구현 배지",
+      "status": "pass",
+      "evidence": "제출 후 추가 요청 0, storage 항목 0개(입력값 없음), 콘솔 0건(입력값 없음), 안내 표시, 배지 표시"
+    },
+    {
+      "group": "10 로그인",
+      "name": "잘못된 입력 검증 문구 (형식만 확인)",
+      "status": "pass",
+      "evidence": "빈 제출 시 오류 문구 표시, 완료 안내 숨김"
+    },
+    {
+      "group": "11 접근성",
+      "name": "각 페이지 main 1개·h1 1개",
+      "status": "pass",
+      "evidence": "14페이지 main=1, h1=1"
+    },
+    {
+      "group": "11 접근성",
+      "name": "모든 input·select·textarea 에 라벨",
+      "status": "pass",
+      "evidence": "입력창 25개 모두 라벨 연결"
+    },
+    {
+      "group": "11 접근성",
+      "name": "360px 클릭 요소 44px 이상 (14페이지)",
+      "status": "pass",
+      "evidence": "측정 353개, 인라인 예외 0개"
+    },
+    {
+      "group": "11 접근성",
+      "name": "768px 클릭 요소 44px 이상 (14페이지)",
+      "status": "pass",
+      "evidence": "측정 373개, 인라인 예외 0개"
+    },
+    {
+      "group": "11 접근성",
+      "name": "1440px 클릭 요소 44px 이상 (14페이지)",
+      "status": "pass",
+      "evidence": "측정 373개, 인라인 예외 0개"
+    },
+    {
+      "group": "11 접근성",
+      "name": "prefers-reduced-motion 에뮬레이션 시 14페이지 오류 없음",
+      "status": "pass",
+      "evidence": "14페이지 reduce 적용, 오류 0"
+    },
+    {
+      "group": "A 카드 모드 정렬",
+      "name": "360px: 4개 페이지 모든 .responsive-table td 의 값 요소가 라벨 열(td 왼쪽 60px)을 침범하지 않음",
+      "status": "pass",
+      "evidence": "재고 표 표 1개/칸 80개 / 주문 표 표 1개/칸 48개 / 대시보드 비교 표 표 1개/칸 16개 / 상품 연결(후보·미연결·이력 표) 표 3개/칸 37개 / mappings 적용 후 칸 38개 - 침범·삐져나옴 0"
+    },
+    {
+      "group": "A 카드 모드 정렬",
+      "name": "768px: 일반 표 레이아웃 유지, 가로 스크롤은 .table-scroll 안에서만",
+      "status": "pass",
+      "evidence": "inventory 표 1/칸 70/표 안 스크롤 1 ; orders 표 1/칸 48/표 안 스크롤 1 ; index 표 1/칸 16/표 안 스크롤 1 ; mappings 표 3/칸 34/표 안 스크롤 3"
+    },
+    {
+      "group": "A 카드 모드 정렬",
+      "name": "1440px: 일반 표 레이아웃 유지, 가로 스크롤은 .table-scroll 안에서만",
+      "status": "pass",
+      "evidence": "inventory 표 1/칸 80/표 안 스크롤 0 ; orders 표 1/칸 48/표 안 스크롤 0 ; index 표 1/칸 16/표 안 스크롤 0 ; mappings 표 3/칸 37/표 안 스크롤 0"
+    },
+    {
+      "group": "B 카드·알림 링크",
+      "name": "대시보드 카드 4개 숫자 = 링크 이동 후 재고 표시 건수 (stock=3, sync=2, unavailable=3, 미연결=mappings)",
+      "status": "pass",
+      "evidence": "품절·부족=3 -> stock 표시 \"샘플 옵션 3개 / 전체 10개\" 행 3 | 조회 실패·지연=2 -> sync 표시 \"샘플 옵션 2개 / 전체 10개\" 행 2 | 미연결 옵션=3 -> mappings \"미연결 3개\" 행 3 | 미지원·관리 미사용·지원 미확인=3 -> unavailable 표시 \"샘플 옵션 3개 / 전체 10개\" 행 3 | attention 직접 이동 행 6"
+    },
+    {
+      "group": "B 카드·알림 링크",
+      "name": "alerts 관련 항목 링크: 재고->?status=stock(3건), 조회->?status=sync(2건), 연결->mappings.html",
+      "status": "pass",
+      "evidence": "a1 stock -> 표시 \"샘플 옵션 3개 / 전체 10개\" 행 3 | a2 stock -> 표시 \"샘플 옵션 3개 / 전체 10개\" 행 3 | a3 sync -> 표시 \"샘플 옵션 2개 / 전체 10개\" 행 2 | a4 sync -> 표시 \"샘플 옵션 2개 / 전체 10개\" 행 2 | a5 연결 -> mappings.html (미연결 3개) | 알림 유형별 개수 {\"stock\":2,\"sync\":2,\"mapping\":1}(알림 개수와 이동 후 행 수는 별개 개념으로 비교하지 않음)"
+    },
+    {
+      "group": "C 방문 기록 규칙",
+      "name": "inventory·orders ?state=loading|error|unauthorized: 기록 안 늘고 토스트 없음 / empty|stale|partial: 기록됨",
+      "status": "pass",
+      "evidence": "inventory?state=loading 0/3 토스트없음 ; inventory?state=empty 2/3 토스트 ; inventory?state=error 0/3 토스트없음 ; inventory?state=stale 2/3 토스트 ; inventory?state=partial 2/3 토스트 ; inventory?state=unauthorized 0/3 토스트없음 ; orders?state=loading 0/3 토스트없음 ; orders?state=empty 2/3 토스트 ; orders?state=error 0/3 토스트없음 ; orders?state=stale 2/3 토스트 ; orders?state=partial 2/3 토스트 ; orders?state=unauthorized 0/3 토스트없음"
+    },
+    {
+      "group": "C 방문 기록 규칙",
+      "name": "단계 이름·토스트·완료 문구 (오늘 StockD 열기 / 재고 화면 열기 / 주문 화면 열기, 점검 완료가 아닙니다, 화면 방문 3개를 모두 기록)",
+      "status": "pass",
+      "evidence": "단계=오늘 StockD 열기/재고 화면 열기/주문 화면 열기 | 재고 토스트=\"재고 화면 방문을 오늘 기록에 남겼습니다(재고 점검 완료가 아닙니다). 2/3\" | 주문(3번째) 토스트=\"오늘의 화면 방문 3개를 모두 기록했습니다(실제 점검 완료가 아닙니다). 상자 친구의 다음 이야기가 열렸어요. 매일 확인에서 읽어 보세요.\" | missions 상태=\"오늘 화면 방문 기록을 마쳤어요. 완료 도장을 찍었습니다.\""
+    },
+    {
+      "group": "D 샘플 연습 배지",
+      "name": "옵션 연결 승인: 1개->첫 연결 체험, 3개->세 옵션 연결 체험, 해제해도 유지, 새로고침하면 초기화",
+      "status": "pass",
+      "evidence": "초기 첫 연결 체험 · 미획득 / 세 옵션 연결 체험 · 미획득 | 연결 버튼=c2:샘플 연결 승인,c3:샘플 연결 승인,n5:샘플 연결 승인 | 1개 승인 후 첫 연결 체험 · 획득 / 세 옵션 연결 체험 · 미획득 | 3개 승인 후 첫 연결 체험 · 획득 / 세 옵션 연결 체험 · 획득 | 전체 해제 후 첫 연결 체험 · 획득 / 세 옵션 연결 체험 · 획득 | 새로고침 후 첫 연결 체험 · 미획득 / 세 옵션 연결 체험 · 미획득"
+    },
+    {
+      "group": "F settings",
+      "name": "수량 기준 입력 검증: 빈 값·소수·음수·문자·지수 거부, 0 이상 정수 허용",
+      "status": "pass",
+      "evidence": "빈 값(입력값 \"\") -> 거부 ; 소수 1.5(입력값 \"1.5\") -> 거부 ; 음수 -3(입력값 \"-3\") -> 거부 ; 지수 1e2(입력값 \"1e2\") -> 거부 ; 문자 abc(키 입력)(입력값 \"\") -> 거부 ; 0(입력값 \"0\") -> 허용 ; 12(입력값 \"12\") -> 허용 ; 999999(입력값 \"999999\") -> 허용 ; 1000000(상한 초과)(입력값 \"1000000\") -> 거부"
+    },
+    {
+      "group": "F settings",
+      "name": "샘플 초기화·일일 기록 삭제는 별개 버튼, 각각 확인창, 취소하면 아무 것도 지워지지 않음",
+      "status": "pass",
+      "evidence": "버튼 \"샘플 초기화\" / \"일일 기록 삭제\" | 샘플 초기화 확인창 제목 \"샘플을 초기화할까요?\" | 일일 기록 삭제 확인창 제목 \"일일 기록을 삭제할까요?\" | 취소 후 오늘 3/3, 컷 1 유지 (삭제·초기화 실행 후 보존 규칙은 9 매일 확인 검사에서 확인)"
+    },
+    {
+      "group": "G states 설명",
+      "name": "stale 설명이 \"마지막 성공값 유지\"를 말하고 \"—로 비운다\"고 말하지 않음, inventory ?state=stale 안내와 일치",
+      "status": "pass",
+      "evidence": "stale 설명 길이 220 | 상단 규칙문=\"확인 지연은 마지막 성공값을 마지막 성공 시각과 함께 표시하며, 0은 정상 조회 결과가 0일 때(품절)만 표시합니다.\" | inventory stale 안내=\"확인 지연 최신 상태를 확인하지 못했습니다 최근 조회가 실패해 마지막 성공값을 보여주는 상태의 예시입니다. 아래 값은 현재 값이 아닐 수 있습니다. 정상 샘플 화\" | stale 행 c2=7"
+    },
+    {
+      "group": "H 배지 의미",
+      "name": "'실제 미연결'(index 채널 상태·settings 채널 카드·about 지원 채널 표)은 모두 .badge-neutral, 재고 상태 8종 클래스 미사용",
+      "status": "pass",
+      "evidence": "index.html 3곳, settings.html 3곳, about.html 5곳 - 모두 badge-neutral"
+    },
+    {
+      "group": "H 배지 의미",
+      "name": "SKU 미연결 배지는 badge-neutral 이고 재고 상태 8종 클래스를 쓰지 않음 (inventory·mappings·index)",
+      "status": "pass",
+      "evidence": "inventory.html 3곳, mappings.html 3곳, index.html 0곳, orders.html 0곳"
+    },
+    {
+      "group": "H 배지 의미",
+      "name": "재고 상태 8종 클래스(.badge-normal 등)는 재고 상태 문구에만 사용 (SKU·연결·실제 미연결 문구 제외)",
+      "status": "pass",
+      "evidence": "8개 페이지의 상태 배지 문구가 모두 재고 상태 이름"
+    },
+    {
+      "group": "A 카드 모드 정렬",
+      "name": "360px 카드 모드 확인용 스크린샷 2장 저장 (orders, mappings)",
+      "status": "pass",
+      "evidence": "ui-orders-360-cards.png, ui-mappings-360-cards.png"
+    }
+  ]
+}

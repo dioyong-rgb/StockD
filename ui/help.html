@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>도움말 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="help">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>도움말</h1>
+        <p>재고 상태와 수량을 읽는 방법, 자주 묻는 질문을 안내합니다.</p>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="help-states">
+      <h2 id="help-states">재고 상태 8종</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="재고 상태 표. 좁은 화면에서는 가로로 스크롤하세요." style="--table-min:640px">
+        <table class="table responsive-table">
+          <thead>
+            <tr><th scope="col">상태</th><th scope="col">의미</th><th scope="col">수량 표시</th></tr>
+          </thead>
+          <tbody id="state-rows"></tbody>
+        </table>
+      </div>
+      <p class="table-footnote">'미지원 예시'는 화면 표시 방식을 보여 주는 가상 사례입니다. 실제로 지원되지 않는다는 뜻이 아닙니다.</p>
+      <p><a class="link-target" href="states.html">화면 상태 6종 예시 보기</a> (불러오는 중·데이터 없음·조회 실패·확인 지연·일부만 표시·권한 없음)</p>
+    </section>
+
+    <section class="section" aria-labelledby="help-qty">
+      <h2 id="help-qty">수량 종류</h2>
+      <div class="grid grid-2">
+        <section class="card">
+          <div class="card-header"><h3 id="qty-seller-title">채널 등록 재고</h3></div>
+          <div class="card-body">
+            <p>네이버 스마트스토어와 쿠팡 판매자배송에서 판매자가 채널에 등록한 판매용 수량입니다.</p>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-header"><h3 id="qty-rocket-title">주문가능 재고</h3></div>
+          <div class="card-body">
+            <p>쿠팡 로켓그로스에서 지금 주문을 받을 수 있는 수량입니다. 창고의 전체 보유 재고와 같다고 가정하지 않습니다.</p>
+          </div>
+        </section>
+      </div>
+      <div class="notice notice-warn" role="note">
+        <p><strong>두 수량을 합산하지 않습니다.</strong> 여러 채널의 판매용 수량이 같은 실제 재고를 가리킬 수 있어, 더하면 실제 보유량보다 크게 보일 수 있습니다.</p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="help-faq">
+      <h2 id="help-faq">자주 묻는 질문</h2>
+      <div class="faq">
+        <details class="faq-item">
+          <summary>왜 수량이 '—'로 보이나요?</summary>
+          <div class="faq-body"><p>조회 실패, 미지원, 지원 미확인, 관리 미사용일 때는 수량을 확인하지 못한 것이므로 0 대신 '—'로 표시합니다. 0은 정상 조회에서 수량 0을 받은 품절일 때만 사용합니다.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>'확인 지연'은 무슨 뜻인가요?</summary>
+          <div class="faq-body"><p>최근 조회가 실패해 마지막으로 성공한 값을 대신 보여 주는 상태입니다. 현재 수량이 아닐 수 있으므로 마지막 성공 시각을 함께 확인하세요.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>로켓그로스 주문이 늦게 보이는 이유는 무엇인가요?</summary>
+          <div class="faq-body"><p>로켓그로스 주문은 출고 이후부터 조회할 수 있는 것으로 가정하고 설계했습니다. 그래서 다른 채널의 신규 주문과 같은 시점의 수치로 비교하지 않도록 표시합니다. 실제 조회 가능 범위는 연동 검증 후 확정합니다.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>샘플 데이터란 무엇인가요?</summary>
+          <div class="faq-body"><p>이 화면의 모든 상품·주문·계정은 화면 구성을 확인하기 위한 가상 값입니다. 실제 쇼핑몰 API와 연결되어 있지 않습니다.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>재고를 수정하거나 발송 처리를 할 수 없나요?</summary>
+          <div class="faq-body"><p>StockD는 조회 전용입니다. 쇼핑몰의 재고 수정, 발송 처리, 주문 상태 변경 기능은 제공하지 않습니다. 쇼핑몰에 쓰는 동작이 없어 조회 도구로서 위험을 낮출 수 있습니다.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>알림은 어디로 오나요?</summary>
+          <div class="faq-body"><p>첫 버전의 알림은 앱 내부의 알림 화면에서만 확인합니다. 이메일이나 메신저로는 보내지 않습니다.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>상품 연결은 자동으로 합쳐지나요?</summary>
+          <div class="faq-body"><p>연결 후보가 있어도 운영자가 확정하기 전에는 내부 SKU로 합치지 않습니다.</p></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="help-contact">
+      <h2 id="help-contact">문의</h2>
+      <section class="card">
+        <div class="card-body">
+          <dl class="key-value">
+            <dt>이메일</dt><dd>contact@example.com <span class="text-muted">(예시)</span></dd>
+            <dt>전화</dt><dd><span class="placeholder">[입력 필요]</span></dd>
+            <dt>운영 시간</dt><dd><span class="placeholder">[입력 필요]</span></dd>
+          </dl>
+          <p class="text-muted">문의 채널은 서비스 개시 전에 실제 정보로 교체해야 합니다.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script>
+    // 재고 상태 표: 라벨은 mock-data.js 의 사전을 사용한다
+    (function () {
+      var labels = window.StockD.data.labels.state
+      var rows = [
+        { key: 'normal', meaning: '정상 조회된 수량이 부족 기준을 넘습니다.', qty: '숫자로 표시' },
+        { key: 'low', meaning: '정상 조회된 수량이 부족 기준 이하입니다.', qty: '숫자로 표시(강조)' },
+        { key: 'zero', meaning: '정상 조회에서 수량 0을 받았습니다.', qty: '0 (이 상태에서만)' },
+        { key: 'stale', meaning: '최근 조회가 실패해 마지막 성공값을 보여 줍니다.', qty: '마지막 성공값 + 시각' },
+        { key: 'failed', meaning: '조회에 실패했고 이전 성공값이 없습니다.', qty: '—' },
+        { key: 'unsupported', meaning: '해당 조회 기능이 제공되지 않는 경우의 표시입니다.', qty: '—' },
+        { key: 'unmanaged', meaning: '채널에서 재고 관리를 쓰지 않는 옵션입니다.', qty: '—' },
+        { key: 'unverified', meaning: '옵션 ID나 조회 지원 여부를 아직 확인하지 못했습니다.', qty: '—' }
+      ]
+      var body = document.getElementById('state-rows')
+      rows.forEach(function (row) {
+        var tr = document.createElement('tr')
+        var td1 = document.createElement('td')
+        td1.className = 'cell-title'
+        td1.setAttribute('data-label', '상태')
+        var badge = document.createElement('span')
+        badge.className = 'badge badge-' + row.key
+        badge.textContent = labels[row.key]
+        td1.appendChild(badge)
+        var td2 = document.createElement('td')
+        td2.setAttribute('data-label', '의미')
+        td2.textContent = row.meaning
+        var td3 = document.createElement('td')
+        td3.setAttribute('data-label', '수량 표시')
+        td3.textContent = row.qty
+        tr.appendChild(td1)
+        tr.appendChild(td2)
+        tr.appendChild(td3)
+        body.appendChild(tr)
+      })
+      var kinds = window.StockD.data.labels.quantityKind
+      document.getElementById('qty-seller-title').textContent = kinds.seller
+      document.getElementById('qty-rocket-title').textContent = kinds.rocket
+    })()
+  </script>
+</body>
+</html>

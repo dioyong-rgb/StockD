@@ -1,0 +1,285 @@
+{
+  "ranAt": "2026-10-13T01:53:34.295Z",
+  "node": "v24.12.0",
+  "total": 46,
+  "passed": 46,
+  "failed": 0,
+  "results": [
+    {
+      "id": "T-SIG-1",
+      "name": "고정 입력 서명이 미리 계산한 소문자 hex 와 일치",
+      "ok": true,
+      "ms": 5
+    },
+    {
+      "id": "T-SIG-2",
+      "name": "signed-date 는 UTC yyMMddTHHmmssZ",
+      "ok": true,
+      "ms": 0
+    },
+    {
+      "id": "T-SIG-3",
+      "name": "쿼리 있는 호출을 stub 이 서명 검증으로 통과시킴 (서명 쿼리 = 전송 쿼리)",
+      "ok": true,
+      "ms": 89
+    },
+    {
+      "id": "T-SIG-4",
+      "name": "Authorization 헤더 형식(stub 에서만 확인)과 모든 호출의 서명 일치",
+      "ok": true,
+      "ms": 28
+    },
+    {
+      "id": "T-ENV-1",
+      "name": "정상 파일 변형(CRLF·BOM·공백·콜론 뒤 공백·대소문자)이 모두 로드됨",
+      "ok": true,
+      "ms": 36
+    },
+    {
+      "id": "T-ENV-2",
+      "name": "형식 오류 파일은 KEY_FILE_FORMAT + 줄 번호만, 내용 노출 없음",
+      "ok": true,
+      "ms": 33
+    },
+    {
+      "id": "T-ENV-3",
+      "name": "키 파일 없음: 서버는 뜨고 쿠팡 호출은 거부(503), stub 호출 0",
+      "ok": true,
+      "ms": 46
+    },
+    {
+      "id": "T-ENV-4",
+      "name": "Vendor ID 줄: 있으면 자동 사용, 형식이 틀리면 KEY_FILE_FORMAT(그 줄)",
+      "ok": true,
+      "ms": 39
+    },
+    {
+      "id": "T-ALLOW-1",
+      "name": "허용 외 이름·경로 주입·쿼리 주입·메서드 변경은 전송 전 거부, stub 호출 0",
+      "ok": true,
+      "ms": 7
+    },
+    {
+      "id": "T-ALLOW-2",
+      "name": "화면 API 에 path·method·url 등 알 수 없는 키를 넣으면 400",
+      "ok": true,
+      "ms": 37
+    },
+    {
+      "id": "T-INPUT",
+      "name": "입력 검증 실패는 400, 값을 에코하지 않고 stub 호출 0",
+      "ok": true,
+      "ms": 46
+    },
+    {
+      "id": "T-MASK",
+      "name": "mask(): 키·서명·Authorization·패턴을 모두 가림, 일반 문자열은 유지",
+      "ok": true,
+      "ms": 1
+    },
+    {
+      "id": "T-LEAK-2",
+      "name": "쿠팡 오류 본문이 Authorization·키를 에코해도 upstreamMessage·로그에 원문 없음",
+      "ok": true,
+      "ms": 14
+    },
+    {
+      "id": "T-LEAK-3",
+      "name": "inspect / JSON.stringify 에 키가 없고 process.env 에도 올라가지 않음",
+      "ok": true,
+      "ms": 17
+    },
+    {
+      "id": "T-LEAK-4",
+      "name": "/api/status 응답은 불리언·줄 번호·vendorId·잠금 외 값이 없음",
+      "ok": true,
+      "ms": 15
+    },
+    {
+      "id": "T-PII-1",
+      "name": "쿠팡 응답에 개인정보·미지정 필드가 섞여도 projection 필드만 응답",
+      "ok": true,
+      "ms": 24
+    },
+    {
+      "id": "T-NET-1",
+      "name": "Host·Origin·세션 토큰 검증",
+      "ok": true,
+      "ms": 50
+    },
+    {
+      "id": "T-NET-2",
+      "name": "메서드·Content-Type·본문 크기·JSON 형식 검사, CORS 헤더 없음",
+      "ok": true,
+      "ms": 40
+    },
+    {
+      "id": "T-NET-3",
+      "name": "127.0.0.1 만 리스닝, 소스에 금지 문자열 없음, CORS 헤더 미전송",
+      "ok": true,
+      "ms": 1535
+    },
+    {
+      "id": "T-NET-4",
+      "name": "GET / 에 세션 토큰이 주입되고 보안 헤더가 붙음, 인스턴스마다 토큰이 다름",
+      "ok": true,
+      "ms": 71
+    },
+    {
+      "id": "T-PATH-1",
+      "name": "경로 순회·고정 목록 밖 파일 요청은 404, 파일 내용 없음",
+      "ok": true,
+      "ms": 60
+    },
+    {
+      "id": "T-RATE-1",
+      "name": "재고 20건 일괄: 초당 3회 이하로 호출",
+      "ok": true,
+      "ms": 36
+    },
+    {
+      "id": "T-RATE-2",
+      "name": "21건 요청은 BATCH_LIMIT, 호출 0",
+      "ok": true,
+      "ms": 10
+    },
+    {
+      "id": "T-RATE-3",
+      "name": "RG 분당 40회: 41번째는 BUSY, 1분 뒤 다시 허용",
+      "ok": true,
+      "ms": 108
+    },
+    {
+      "id": "T-CONC",
+      "name": "동시에 두 작업을 보내면 하나만 쿠팡을 호출하고 나머지는 BUSY",
+      "ok": true,
+      "ms": 315
+    },
+    {
+      "id": "T-LOCK-1",
+      "name": "403 수신 시 잠금, 즉시 재요청은 LOCKED(쿠팡 호출 0), 원인 안내는 가능성 표현",
+      "ok": true,
+      "ms": 49
+    },
+    {
+      "id": "T-LOCK-2",
+      "name": "일반 4xx 는 60초, 429 는 300초 뒤 잠금 해제 (가짜 시계)",
+      "ok": true,
+      "ms": 109
+    },
+    {
+      "id": "T-LOCK-3",
+      "name": "연속 실패 2회는 수동 잠금, /api/unlock 으로만 해제, 성공 시 연속 실패 초기화",
+      "ok": true,
+      "ms": 421
+    },
+    {
+      "id": "T-LOCK-4",
+      "name": "일괄 조회 중 3번째에서 429: 1·2 ok, 3 failed, 나머지 not_run, 재시도 없음",
+      "ok": true,
+      "ms": 53
+    },
+    {
+      "id": "T-TIME-1",
+      "name": "응답 지연은 TIMEOUT(504), 1MB 초과는 RESPONSE_TOO_LARGE",
+      "ok": true,
+      "ms": 391
+    },
+    {
+      "id": "T-PARSE-1",
+      "name": "envelope code 숫자 200·문자열 SUCCESS 모두 성공, 수량 타입 불일치는 null + 실패",
+      "ok": true,
+      "ms": 47
+    },
+    {
+      "id": "T-PAGING",
+      "name": "nextToken 정규화: 끝 표시(null·빈 문자열·\"null\")는 null, 이상한 문자는 NEXT_TOKEN_UNSUPPORTED",
+      "ok": true,
+      "ms": 29
+    },
+    {
+      "id": "T-LOG",
+      "name": "로그는 \"HH:mm:ss GET 허용이름 상태 ms\" 한 줄 형식, 비밀·vendorId 없음",
+      "ok": true,
+      "ms": 17
+    },
+    {
+      "id": "T-BASEURL",
+      "name": "시험용 호스트 오버라이드는 loopback(127.0.0.1) http 만 허용",
+      "ok": true,
+      "ms": 2
+    },
+    {
+      "id": "T-SHUT-1",
+      "name": "시험 전용 진입 스크립트 실행·정상 종료 처리: 종료 신호 대체(stdin) 후 코드 0, 포트 해제, 비밀 없음",
+      "ok": true,
+      "ms": 354
+    },
+    {
+      "id": "T-SHUT-2",
+      "name": "종료 처리 함수: 진행 중 쿠팡 요청을 끊고 포트를 해제하며 두 번 불러도 안전 (프로세스 내부 호출)",
+      "ok": true,
+      "ms": 45
+    },
+    {
+      "id": "T-M1-1",
+      "name": "시험용 주소는 createApp 인자로만, 가짜 키 파일과 함께일 때만 허용 (실제 키 조합 불가)",
+      "ok": true,
+      "ms": 13
+    },
+    {
+      "id": "T-M1-2",
+      "name": "STOCKD_TEST_BASE_URL 이 남아 있으면 운영 진입점은 시작을 거부하고 그 주소로 아무것도 보내지 않음",
+      "ok": true,
+      "ms": 106
+    },
+    {
+      "id": "T-ENVGUARD",
+      "name": "위험한 실행 환경(TLS 검증 끄기·CA 추가·프록시·NODE_OPTIONS) 점검: 운영 모드는 거부, 변수 이름만 안내",
+      "ok": true,
+      "ms": 847
+    },
+    {
+      "id": "T-RATE-4",
+      "name": "vendorId 를 바꿔 8번 보내도 전역 초당 3회를 넘지 않음 (가짜 키·stub)",
+      "ok": true,
+      "ms": 40
+    },
+    {
+      "id": "T-MASK-2",
+      "name": "마스킹 변형(소문자·base64·hex·제로폭·일부·줄 분할)과 업스트림 메시지 폐기",
+      "ok": true,
+      "ms": 4
+    },
+    {
+      "id": "T-MASK-3",
+      "name": "쿠팡 오류가 키 일부(소문자·줄 분할)를 되돌려 줘도 화면 응답·로그에 조각이 없음",
+      "ok": true,
+      "ms": 20
+    },
+    {
+      "id": "T-L3",
+      "name": "GET / 는 교차 출처 요청이면 토큰 없이 403 (Origin·Sec-Fetch-Site)",
+      "ok": true,
+      "ms": 55
+    },
+    {
+      "id": "T-L4",
+      "name": "수동 잠금 해제는 잠긴 뒤 60초 대기, 서버 실행당 2회까지 (그 뒤는 서버 재시작 요구)",
+      "ok": true,
+      "ms": 57
+    },
+    {
+      "id": "T-L7",
+      "name": "시작 실패 메시지는 고정 문구만 내보내고 마스킹을 거침",
+      "ok": true,
+      "ms": 0
+    },
+    {
+      "id": "T-LEAK-1",
+      "name": "전 시험 중 수집한 응답 본문·헤더·로그에 키·서명·Authorization 이 0건",
+      "ok": true,
+      "ms": 11
+    }
+  ]
+}

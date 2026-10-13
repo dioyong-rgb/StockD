@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>통합 주문 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+</head>
+<body data-page="orders">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>통합 주문</h1>
+        <p>주문 행별 수량과 조회된 상태, 부분 클레임을 구분합니다.</p>
+      </div>
+      <p class="reference-time">샘플 시나리오 기준 <strong>2026.10.04 09:40</strong></p>
+    </div>
+
+    <div class="notice notice-warn" role="note">
+      <p><strong>로켓그로스는 출고 이후 조회되는 주문만 표시합니다.</strong> 결제 직후 주문 전체를 수집한 것이 아니며, 상태 변경 내역과 취소·반품·교환 조회 지원은 미확인입니다.</p>
+    </div>
+
+    <section class="card card-flush" aria-label="주문 목록">
+      <div id="orderTable"></div>
+    </section>
+
+    <dialog id="orderDialog"></dialog>
+  </main>
+
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/table.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var StockD = window.StockD
+      var esc = StockD.table.escapeHtml
+      var labels = StockD.data.labels
+
+      // 쇼핑몰 표시
+      function channelHtml(order) {
+        return '<span class="channel channel-' + esc(order.channel) + '">' + esc(labels.channel[order.channel]) + '</span>'
+      }
+
+      // 주문 상태 배지: 재고 상태 8종과 구분되도록 보조 배지(중립·직접 확인) 사용
+      // 로켓그로스 'RG 상태 미확인' 은 '지원 미확인' 과 같은 의미라서 badge-unverified 유지
+      function stateBadgeClass(state) {
+        if (state === 'claim') return 'badge badge-attention'
+        if (state === 'limited') return 'badge badge-unverified'
+        return 'badge badge-neutral'
+      }
+      function stateBadgeHtml(order) {
+        return '<span class="' + stateBadgeClass(order.state) + '">' + esc(labels.orderState[order.state]) + '</span>'
+      }
+
+      // 일시 표시: 다른 화면과 같은 형식(2026.10.04 09:12)
+      function dateTimeText(order) {
+        return StockD.format.formatDateTime(order.date + ' ' + order.time)
+      }
+
+      // 클레임 표시: 로켓그로스 미확인은 0 이 아니라 '지원 미확인'
+      function isClaimUnverified(order) {
+        return order.claimQuantity === null || order.claimQuantity === undefined
+      }
+      function claimHtml(order) {
+        if (isClaimUnverified(order)) {
+          return '<span class="badge badge-unverified">지원 미확인</span>' +
+            '<span class="secondary">클레임 없음이 아닙니다</span>'
+        }
+        if (order.claimQuantity > 0) {
+          return '<strong>' + esc(order.claim) + '</strong>' +
+            '<span class="secondary">주문 ' + esc(order.quantity) + '개 중 ' + esc(order.claimQuantity) + '개</span>'
+        }
+        return esc(order.claim)
+      }
+      function claimText(order) {
+        if (isClaimUnverified(order)) return '지원 미확인'
+        if (order.claimQuantity > 0) return order.claim + ' / 주문 ' + order.quantity + '개 중 ' + order.claimQuantity + '개'
+        return order.claim
+      }
+
+      var columns = [
+        {
+          key: 'id', label: '주문번호', title: true,
+          render: function (o) { return '<span class="sku">' + esc(o.id) + '</span>' }
+        },
+        {
+          key: 'date', label: '일시', sublabel: '예시 결제 시각',
+          render: function (o) { return '<span class="timestamp">' + esc(dateTimeText(o)) + '</span><span class="secondary">샘플</span>' }
+        },
+        {
+          key: 'channel', label: '채널·배송',
+          render: function (o) { return channelHtml(o) + '<span class="secondary">' + esc(labels.fulfillment[o.fulfillment]) + '</span>' }
+        },
+        {
+          key: 'name', label: '상품·옵션',
+          render: function (o) { return esc(o.name) + '<span class="secondary">' + esc(o.option) + '</span><span class="sku">' + esc(o.sku) + '</span>' }
+        },
+        {
+          key: 'quantity', label: '수량', sublabel: '주문 수량', align: 'right',
+          render: function (o) { return '<span class="number">' + esc(o.quantity) + '</span>' }
+        },
+        {
+          key: 'original', label: '원본 상태', sublabel: '조회한 상태',
+          render: function (o) {
+            var note = o.fulfillment === 'rocket' ? '출고 이후 조회 범위' : '원본: ' + o.original
+            return stateBadgeHtml(o) + '<span class="secondary">' + esc(o.label) + '</span><span class="secondary">' + esc(note) + '</span>'
+          }
+        },
+        {
+          key: 'claim', label: '클레임', sublabel: '부분 클레임 수량',
+          render: claimHtml
+        }
+      ]
+
+      function row(label, value) {
+        return '<dt>' + esc(label) + '</dt><dd>' + value + '</dd>'
+      }
+
+      function buildOrderDetail(o) {
+        var qty = o.quantity + '개' + (o.fulfillment === 'rocket' ? ' · salesQuantity 예시, 재고 아님' : '')
+        var list = '<dl class="key-value">' +
+          row('상품 / 판매 옵션', esc(o.name + ' / ' + o.option)) +
+          row('내부 SKU', esc(o.sku)) +
+          row('채널 / 배송 방식', esc(labels.channel[o.channel] + ' / ' + labels.fulfillment[o.fulfillment])) +
+          row('샘플 계정', esc(labels.account[o.channel])) +
+          row('예시 결제 시각', esc(dateTimeText(o))) +
+          row('주문 행 수량', esc(qty)) +
+          row('조회한 상태', esc(labels.orderState[o.state] + ' · ' + o.label)) +
+          row('조회한 원본 상태', esc(o.original)) +
+          row('클레임 예시', esc(claimText(o))) +
+          row('데이터 출처', '가상 샘플 · 실제 주문 응답 아님') +
+          '</dl>'
+        var note
+        if (o.fulfillment === 'rocket') {
+          note = '<div class="notice notice-warn"><p><strong>출고 이후 조회되는 주문의 예시입니다.</strong> 결제 직후 주문 전체와 상태 변경은 확인할 수 없습니다. 취소·반품·교환 지원도 미확인으로 표시하며 추정하지 않습니다.</p></div>'
+        } else {
+          note = '<div class="notice notice-info"><p>주문 행의 수량과 부분 클레임을 각각 보존합니다. 화면은 조회용이며 발송·취소·주문 상태를 바꾸지 않습니다.</p></div>'
+        }
+        return StockD.table.buildDialogHtml({
+          title: '주문 행 상세',
+          subtitle: o.id + ' · 개인정보 없는 샘플',
+          bodyHtml: list + note
+        })
+      }
+
+      var dialog = document.getElementById('orderDialog')
+      var channelOptions = Object.keys(labels.channel).map(function (key) { return { value: key, label: labels.channel[key] } })
+      var fulfillmentOptions = Object.keys(labels.fulfillment).map(function (key) { return { value: key, label: labels.fulfillment[key] } })
+      var stateOptions = Object.keys(labels.orderState).map(function (key) { return { value: key, label: labels.orderState[key] } })
+
+      StockD.table.createFilterableTable({
+        container: document.getElementById('orderTable'),
+        pageName: 'orders',
+        idPrefix: 'orders',
+        filterLabel: '주문 필터',
+        rows: function () { return StockD.state.orders },
+        columns: columns,
+        search: {
+          id: 'q', label: '검색', placeholder: '주문 ID, 상품, 내부 SKU 검색',
+          text: function (o) { return [o.id, o.name, o.option, o.sku].join(' ') }
+        },
+        filters: [
+          { id: 'channel', label: '쇼핑몰', allLabel: '전체 쇼핑몰', options: channelOptions, match: function (o, v) { return o.channel === v } },
+          { id: 'fulfillment', label: '배송 방식', allLabel: '전체 배송 방식', options: fulfillmentOptions, match: function (o, v) { return o.fulfillment === v } },
+          { id: 'state', param: 'status', label: '상태 / 클레임', allLabel: '전체 상태', options: stateOptions, match: function (o, v) { return o.state === v } },
+          { id: 'from', label: '예시 시작일', type: 'date', defaultValue: '2026-10-03', match: function (o, v) { return o.date >= v } },
+          { id: 'to', label: '예시 종료일', type: 'date', defaultValue: '2026-10-04', match: function (o, v) { return o.date <= v } }
+        ],
+        validate: function (v) {
+          if (v.from && v.to && v.from > v.to) {
+            return { title: '날짜 범위를 확인해 주세요', text: '시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.' }
+          }
+          return null
+        },
+        emptyMessage: { title: '조건에 맞는 샘플이 없습니다', text: '검색어나 필터를 바꿔 보세요. 이 결과는 API 조회 실패가 아닙니다.' },
+        onRowClick: function (o, trigger) {
+          StockD.table.openDetail(dialog, buildOrderDetail(o), trigger)
+        },
+        actionLabel: '상세',
+        actionAriaLabel: function (o) { return '주문 ' + o.id + ' 상세 보기' },
+        summaryLabel: function (count, total) { return '샘플 주문 행 ' + count + '개 / 전체 ' + total + '개' },
+        summaryHint: '변경 조회 건수나 실제 신규 주문 통계가 아닙니다.',
+        tableLabel: '통합 주문 표',
+        minWidth: '1050px',
+        footnote: '고객 이름·전화번호·주소가 없는 가상 주문입니다. 로켓그로스 판매수량(salesQuantity)은 주문 수량이며 재고가 아닙니다.'
+      })
+    })()
+  </script>
+</body>
+</html>

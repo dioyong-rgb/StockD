@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>알림 · StockD 시안</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <style>
+    /* 페이지 전용 스타일 (공통 CSS 이관 요청 대상: .alert-list / .alert-item / .alert-toolbar 등) */
+    .alert-list { list-style: none; margin: 0; padding: 0; }
+    .alert-item { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: start; padding: 16px 20px; }
+    .alert-item + .alert-item { border-top: 1px solid var(--color-line); }
+    .alert-item-done { background: var(--color-surface-muted); }
+    .alert-item h3 { margin: 6px 0 2px; font-size: 1rem; }
+    .alert-item p { margin: 0; }
+    .alert-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; }
+    .alert-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .alert-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--color-line); }
+    @media (max-width: 600px) {
+      .alert-item { grid-template-columns: 1fr; padding: 16px; }
+    }
+  </style>
+</head>
+<body data-page="alerts">
+  <main id="main" class="page">
+    <div class="page-heading">
+      <div>
+        <h1>알림</h1>
+        <p>부족 재고, 조회 오류, 상품 연결 확인 요청을 한곳에서 봅니다.</p>
+      </div>
+      <p class="reference-time">샘플 시나리오 기준 <strong>2026.10.04 09:40</strong></p>
+    </div>
+
+    <div class="notice notice-info" role="note">
+      <p><strong>미리 만든 알림 예시입니다.</strong> 실제 운영 경보는 만들어지지 않습니다. ‘예시 확인’은 이 화면의 읽음 표시만 바꾸며, 부족 수량이나 조회 오류를 해결한 것으로 처리하지 않습니다. 매일 확인의 ‘검토 기록’과는 별개입니다. 새로고침하면 처음 상태로 돌아갑니다.</p>
+    </div>
+
+    <section class="card card-flush section" aria-labelledby="alerts-title">
+      <div class="card-header">
+        <div>
+          <h2 id="alerts-title">알림 목록</h2>
+          <p id="alerts-summary" role="status"></p>
+        </div>
+      </div>
+      <div class="tabs" role="group" aria-label="알림 확인 상태 필터">
+        <button type="button" class="tab" data-tab="open" aria-pressed="true">미확인 <span class="tab-count" id="count-open">0</span></button>
+        <button type="button" class="tab" data-tab="all" aria-pressed="false">전체 <span class="tab-count" id="count-all">0</span></button>
+      </div>
+      <div class="alert-toolbar">
+        <div class="field">
+          <label for="type-filter">유형</label>
+          <select id="type-filter">
+            <option value="">전체 유형</option>
+            <option value="stock">재고</option>
+            <option value="sync">조회</option>
+            <option value="mapping">연결</option>
+          </select>
+        </div>
+        <button type="button" class="button" id="ack-all">전체 예시 확인</button>
+      </div>
+      <div id="alert-body"></div>
+      <div class="card-footer">알림의 시각은 모두 2026.10.04의 가상 예시입니다.</div>
+    </section>
+  </main>
+  <script src="assets/mock-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/table.js"></script>
+  <script src="assets/missions.js"></script>
+  <script>
+    (function () {
+      var S = window.StockD
+      var labels = S.data.labels
+      var tab = 'open'
+      var typeFilter = ''
+
+      // 알림 유형 배지: 재고 상태 8종과 구분되는 보조 배지 사용
+      var BADGE = { stock: 'badge-attention', sync: 'badge-attention', mapping: 'badge-neutral' }
+
+      // HTML 이스케이프: 공통 함수 사용
+      var esc = S.table.escapeHtml
+
+      // 관련 항목 이동 링크: 재고 알림 → 부족·품절(stock), 조회 알림 → 실패·지연(sync), 연결 알림 → 상품 연결
+      var TARGET_HREF = {
+        stock: 'inventory.html?status=stock',
+        sync: 'inventory.html?status=sync',
+        mapping: 'mappings.html'
+      }
+      function targetHref(alert) {
+        return TARGET_HREF[alert.type] || 'inventory.html'
+      }
+
+      function targetLabel(alert) {
+        return alert.target === 'mapping' ? '상품 연결에서 보기' : '재고에서 보기'
+      }
+
+      function renderItem(alert) {
+        var done = alert.acknowledged
+        var action = done
+          ? '<span class="badge badge-neutral">예시 확인함</span>'
+          : '<button type="button" class="button button-small" data-ack="' + esc(alert.id) + '" aria-label="' + esc(alert.title) + ' 예시 확인">예시 확인</button>'
+        return '<li class="alert-item' + (done ? ' alert-item-done' : '') + '">' +
+          '<div>' +
+          '<span class="badge ' + BADGE[alert.type] + '">' + esc(labels.alertType[alert.type]) + '</span> ' +
+          '<span class="badge badge-sample">샘플</span>' +
+          '<h3>' + esc(alert.title) + '</h3>' +
+          '<p>' + esc(alert.description) + '</p>' +
+          '<div class="alert-meta"><span class="secondary timestamp">' + esc(S.format.formatDateTime(alert.time)) + '</span>' +
+          '<span class="secondary">' + (done ? '이 화면에서 확인함' : '아직 확인하지 않음') + '</span>' +
+          '<a class="button button-quiet button-small" href="' + targetHref(alert) + '">' + targetLabel(alert) + '</a></div>' +
+          '</div>' +
+          '<div class="alert-actions">' + action + '</div>' +
+          '</li>'
+      }
+
+      function render(focusId) {
+        var all = S.state.alerts
+        var openCount = all.filter(function (a) { return !a.acknowledged }).length
+        document.getElementById('count-open').textContent = openCount
+        document.getElementById('count-all').textContent = all.length
+        var tabs = document.querySelectorAll('[data-tab]')
+        for (var i = 0; i < tabs.length; i += 1) {
+          tabs[i].setAttribute('aria-pressed', tabs[i].getAttribute('data-tab') === tab ? 'true' : 'false')
+        }
+        document.getElementById('ack-all').disabled = openCount === 0
+
+        var shown = all.filter(function (a) {
+          if (tab === 'open' && a.acknowledged) return false
+          if (typeFilter && a.type !== typeFilter) return false
+          return true
+        })
+        document.getElementById('alerts-summary').textContent = '예시 알림 ' + shown.length + '건 표시 (전체 ' + all.length + '건 중 미확인 ' + openCount + '건)'
+
+        var body = document.getElementById('alert-body')
+        if (shown.length === 0) {
+          if (tab === 'open' && openCount === 0) {
+            body.innerHTML = '<div class="empty-state" role="status"><h3>미확인 알림이 없습니다</h3><p>모든 예시 알림을 확인했습니다. 확인한 예시는 ‘전체’ 탭에서 다시 볼 수 있습니다. 조회 오류나 재고 상태가 해결된 것은 아닙니다.</p><button type="button" class="button button-small" data-tab-go="all">전체 보기</button></div>'
+          } else {
+            body.innerHTML = '<div class="empty-state" role="status"><h3>조건에 맞는 알림이 없습니다</h3><p>유형 필터를 바꿔 보세요. 이 결과는 조회 실패가 아닙니다.</p><button type="button" class="button button-small" data-reset-filter="1">유형 필터 초기화</button></div>'
+          }
+        } else {
+          body.innerHTML = '<ul class="alert-list" aria-label="알림 예시 목록">' + shown.map(renderItem).join('') + '</ul>'
+        }
+        if (focusId) {
+          var next = document.querySelector('#alert-body [data-ack]') || document.getElementById('alerts-title')
+          if (next) {
+            if (next.id === 'alerts-title') next.setAttribute('tabindex', '-1')
+            next.focus()
+          }
+        }
+      }
+
+      function acknowledge(id) {
+        var alert = S.state.alerts.filter(function (a) { return a.id === id })[0]
+        if (!alert || alert.acknowledged) return
+        alert.acknowledged = true
+        render(id)
+        S.toast('알림 예시를 확인했습니다. 재고·조회 오류 상태는 그대로 유지됩니다.')
+      }
+
+      document.getElementById('main').addEventListener('click', function (event) {
+        var el = event.target.closest ? event.target.closest('button') : null
+        if (!el || el.disabled) return
+        if (el.hasAttribute('data-ack')) {
+          acknowledge(el.getAttribute('data-ack'))
+        } else if (el.hasAttribute('data-tab')) {
+          tab = el.getAttribute('data-tab')
+          render()
+        } else if (el.hasAttribute('data-tab-go')) {
+          tab = el.getAttribute('data-tab-go')
+          render()
+          var t = document.querySelector('[data-tab="' + tab + '"]')
+          if (t) t.focus()
+        } else if (el.hasAttribute('data-reset-filter')) {
+          typeFilter = ''
+          document.getElementById('type-filter').value = ''
+          render()
+        } else if (el.id === 'ack-all') {
+          var count = 0
+          S.state.alerts.forEach(function (a) {
+            if (!a.acknowledged) {
+              a.acknowledged = true
+              count += 1
+            }
+          })
+          render(true)
+          S.toast('예시 알림 ' + count + '건을 모두 확인했습니다. 재고·조회 오류 상태는 그대로 유지됩니다.')
+        }
+      })
+
+      document.getElementById('type-filter').addEventListener('change', function (event) {
+        typeFilter = event.target.value
+        render()
+      })
+
+      render()
+    })()
+  </script>
+</body>
+</html>
